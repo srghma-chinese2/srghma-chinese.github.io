@@ -14,47 +14,38 @@ const mychineseSitePrefix__root = isFileSystem ? "file:///home/srghma/projects/s
 const mychineseSitePrefix__elon_musk = isFileSystem ? "file:///home/srghma/projects/srghma-chinese/elon-musk/" : "/elon-musk/"
 const isGithubPage = /srghma-chinese\d*\.github\.io/.test(window.location.host)
 
-const ruPinyinTextPromise__file_url = () => {
+const {
+  ruPinyinTextPromise__file_url,
+  hanziAnkiInfoPromise__file_url,
+  allHanziAnkiInfoPromise__file_url
+} = (function() {
   if (isFileSystem) {
-    return `${mychineseSitePrefix__root}/ru-pinyin.txt`
+    return {
+      ruPinyinTextPromise__file_url:     () =>      `${mychineseSitePrefix__root}/ru-pinyin.txt`,
+      hanziAnkiInfoPromise__file_url:    (hanzi) => `${mychineseSitePrefix__root}/files-split/${hanzi}.json`,
+      allHanziAnkiInfoPromise__file_url: () =>      `${mychineseSitePrefix__root}/files/anki.json`
+    }
   } else if (isGithubPage) {
     // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
     // return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/ru-pinyin.txt?raw=true`
-    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/raw/master/ru-pinyin.txt`
-  } else {
-    // serve .
-    // localhost:5000
-    return `${mychineseSitePrefix__root}/ru-pinyin.txt`
-  }
-}
+    // https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/raw/master/ru-pinyin.txt
+    const mychineseSitePrefix__root = `https://raw.githubusercontent.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/main/`
 
-const hanziAnkiInfoPromise__file_url = (hanzi) => {
-  if (isFileSystem) {
-    return `${mychineseSitePrefix__root}/files-split/${hanzi}.json`
-  } else if (isGithubPage) {
-    // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
-    // return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/files-split/${hanzi}.json?raw=true`
-    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/raw/master/files-split/${hanzi}.json`
+    return {
+      ruPinyinTextPromise__file_url:     () =>      `${mychineseSitePrefix__root}/ru-pinyin.txt`,
+      hanziAnkiInfoPromise__file_url:    (hanzi) => `${mychineseSitePrefix__root}/files-split/${hanzi}.json`,
+      allHanziAnkiInfoPromise__file_url: () =>      `${mychineseSitePrefix__root}/files/anki.json`
+    }
   } else {
     // serve .
     // localhost:5000
-    return `${mychineseSitePrefix__root}/files-split/${hanzi}.json`
+    return {
+      ruPinyinTextPromise__file_url:     () =>      `${mychineseSitePrefix__root}/ru-pinyin.txt`,
+      hanziAnkiInfoPromise__file_url:    (hanzi) => `${mychineseSitePrefix__root}/files-split/${hanzi}.json`,
+      allHanziAnkiInfoPromise__file_url: () =>      `${mychineseSitePrefix__root}/files/anki.json`
+    }
   }
-}
-
-const allHanziAnkiInfoPromise__file_url = () => {
-  if (isFileSystem) {
-    return `${mychineseSitePrefix__root}/files/anki.json`
-  } else if (isGithubPage) {
-    // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
-    // return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/files/anki.json?raw=true`
-    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/raw/master/files/anki.json`
-  } else {
-    // serve .
-    // localhost:5000
-    return `${mychineseSitePrefix__root}/files/anki.json`
-  }
-}
+})();
 
 const isCurrentPageAHPage = (function() {
   if (!isBrowser) { return false }
