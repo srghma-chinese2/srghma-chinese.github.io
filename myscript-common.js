@@ -14,6 +14,45 @@ const mychineseSitePrefix__root = isFileSystem ? "file:///home/srghma/projects/s
 const mychineseSitePrefix__elon_musk = isFileSystem ? "file:///home/srghma/projects/srghma-chinese/elon-musk/" : "/elon-musk/"
 const isGithubPage = /srghma-chinese\d*\.github\.io/.test(window.location.host)
 
+const ruPinyinTextPromise = () => {
+  if (isFileSystem) {
+    return `${mychineseSitePrefix__root}/ru-pinyin.txt`
+  } else if (isGithubPage) {
+    // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
+    return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/ru-pinyin.txt?raw=true`
+  } else {
+    // serve .
+    // localhost:5000
+    return `${mychineseSitePrefix__root}/ru-pinyin.txt`
+  }
+}
+
+const hanziAnkiInfoPromise = (hanzi) => {
+  if (isFileSystem) {
+    return `${mychineseSitePrefix__root}/files-split/${hanzi}.json`
+  } else if (isGithubPage) {
+    // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
+    return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/files-split/${hanzi}.json?raw=true`
+  } else {
+    // serve .
+    // localhost:5000
+    return `${mychineseSitePrefix__root}/files-split/${hanzi}.json`
+  }
+}
+
+const allHanziAnkiInfoPromise = () => {
+  if (isFileSystem) {
+    return `${mychineseSitePrefix__root}/files/anki.json`
+  } else if (isGithubPage) {
+    // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
+    return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/files/anki.json?raw=true`
+  } else {
+    // serve .
+    // localhost:5000
+    return `${mychineseSitePrefix__root}/files/anki.json`
+  }
+}
+
 const isCurrentPageAHPage = (function() {
   if (!isBrowser) { return false }
   let x = window.location.pathname.split('/')
@@ -53,9 +92,9 @@ function ruPinyinTextToArray(text) {
 
 const removeLinks = x => x.replace(/<link>[^<]*<\/link>/g, '')
 
-const ruPinyinTextPromise = () => fetch(`${mychineseSitePrefix__root}/ru-pinyin.txt`).then(x => x.text())
-const hanziAnkiInfoPromise = (hanzi) => fetch(`${mychineseSitePrefix__root}/files-split/${hanzi}.json`).then(x => x.json())
-const allHanziAnkiInfoPromise = () => fetch(`${mychineseSitePrefix__root}/files/anki.json`).then(x => x.json())
+const ruPinyinTextPromise = () => fetch(ruPinyinTextPromise__file_url).then(x => x.text())
+const hanziAnkiInfoPromise = (hanzi) => fetch(hanziAnkiInfoPromise__file_url(hanzi)).then(x => x.json())
+const allHanziAnkiInfoPromise = () => fetch(allHanziAnkiInfoPromise__file_url).then(x => x.json())
 
 const asyncLoadAllAnkiInfoAndText = async (hanzi) => {
   const [allHanziAnkiInfo, ruPinyinText] = await Promise.all([
@@ -165,6 +204,7 @@ function showText(containerElement, text) {
     // <img src="asdfasdf.png"
     // <img src="hanziyan-J11022.png"/>
     // <img src='lf_24037.gif">
+    // https://github.com/srghma-chinese-files/srghma-chinese-files.github.io/blob/master/PATH_TO_FILE?raw=true
     text = text.replace(/<img src=("|')(?!https?\:\/\/)/g, '<img src=$1https://srghma-chinese-files.github.io/collection.media/')
     // href="allsetlearning-gong1.mp3"
     text = text.replace(/href="([^\.]+)\.mp3"/g, 'href="https://srghma-chinese-files.github.io/collection.media/$1.mp3"')
