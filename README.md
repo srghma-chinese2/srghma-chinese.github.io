@@ -14,7 +14,14 @@ some files are being served from https://github.com/srghma-chinese-files/srghma-
 
 #### scripts
 
+```sh
+# useful
+git lfs install
+git lfs track
+git lfs migrate import --no-rewrite files/anki.json
 ```
+
+```js
 // ==UserScript==
 // @name         New Userscript
 // @namespace    http://tampermonkey.net/
@@ -65,7 +72,7 @@ function doAsynclyOnce(find, isValid, doSomething) {
 })();
 ```
 
-```
+```js
 // ==UserScript==
 // @name         New Userscript
 // @namespace    http://tampermonkey.net/
