@@ -1,5 +1,5 @@
 ;(async function() {
-  if (window.location.host === 'srghma-chinese.github.io') { return }
+  if (isGithubPage) { return }
 
   const allHanziAnkiInfo = await allHanziAnkiInfoPromise()
 

@@ -12,6 +12,7 @@ var isBrowser = (function() {
 const isFileSystem = isBrowser && window.location.protocol === "file:"
 const mychineseSitePrefix__root = isFileSystem ? "file:///home/srghma/projects/srghma-chinese" : ""
 const mychineseSitePrefix__elon_musk = isFileSystem ? "file:///home/srghma/projects/srghma-chinese/elon-musk/" : "/elon-musk/"
+const isGithubPage = /srghma-chinese\d*\.github\.io/.test(window.location.host)
 
 const isCurrentPageAHPage = (function() {
   if (!isBrowser) { return false }
@@ -77,7 +78,7 @@ const asyncLoadHanziAnkiInfoAndAllAnkiInfoAndText = async (hanzi) => {
   let hanziAnkiInfo
   let ruPinyinText
 
-  if (window.location.host === 'srghma-chinese.github.io') {
+  if (isGithubPage) {
     const result = await asyncLoadHanziAnkiInfoAndText(hanzi)
     hanziAnkiInfo = result.hanziAnkiInfo
     ruPinyinText = result.ruPinyinText
@@ -159,7 +160,7 @@ function showText(containerElement, text) {
     text = text.replace(/<\/object>/g, '')
 
     text = text.replace('<a href="https://images.yw11.com/zixing/', '<a href="https://lens.google.com/uploadbyurl?url=https://images.yw11.com/zixing/')
-  } else if (window.location.host === 'srghma-chinese.github.io') {
+  } else if (isGithubPage) {
     // <img src="https://www.unicode.org/cgi-bin/refglyph?24-5DE5"
     // <img src="asdfasdf.png"
     // <img src="hanziyan-J11022.png"/>
