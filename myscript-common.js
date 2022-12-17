@@ -14,7 +14,7 @@ const mychineseSitePrefix__root = isFileSystem ? "file:///home/srghma/projects/s
 const mychineseSitePrefix__elon_musk = isFileSystem ? "file:///home/srghma/projects/srghma-chinese/elon-musk/" : "/elon-musk/"
 const isGithubPage = /srghma-chinese\d*\.github\.io/.test(window.location.host)
 
-const ruPinyinTextPromise = () => {
+const ruPinyinTextPromise__file_url = () => {
   if (isFileSystem) {
     return `${mychineseSitePrefix__root}/ru-pinyin.txt`
   } else if (isGithubPage) {
@@ -27,7 +27,7 @@ const ruPinyinTextPromise = () => {
   }
 }
 
-const hanziAnkiInfoPromise = (hanzi) => {
+const hanziAnkiInfoPromise__file_url = (hanzi) => {
   if (isFileSystem) {
     return `${mychineseSitePrefix__root}/files-split/${hanzi}.json`
   } else if (isGithubPage) {
@@ -40,7 +40,7 @@ const hanziAnkiInfoPromise = (hanzi) => {
   }
 }
 
-const allHanziAnkiInfoPromise = () => {
+const allHanziAnkiInfoPromise__file_url = () => {
   if (isFileSystem) {
     return `${mychineseSitePrefix__root}/files/anki.json`
   } else if (isGithubPage) {
