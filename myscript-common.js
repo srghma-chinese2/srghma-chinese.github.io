@@ -19,7 +19,8 @@ const ruPinyinTextPromise__file_url = () => {
     return `${mychineseSitePrefix__root}/ru-pinyin.txt`
   } else if (isGithubPage) {
     // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
-    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/ru-pinyin.txt?raw=true`
+    // return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/ru-pinyin.txt?raw=true`
+    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/raw/master/ru-pinyin.txt`
   } else {
     // serve .
     // localhost:5000
@@ -32,7 +33,8 @@ const hanziAnkiInfoPromise__file_url = (hanzi) => {
     return `${mychineseSitePrefix__root}/files-split/${hanzi}.json`
   } else if (isGithubPage) {
     // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
-    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/files-split/${hanzi}.json?raw=true`
+    // return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/files-split/${hanzi}.json?raw=true`
+    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/raw/master/files-split/${hanzi}.json`
   } else {
     // serve .
     // localhost:5000
@@ -45,7 +47,8 @@ const allHanziAnkiInfoPromise__file_url = () => {
     return `${mychineseSitePrefix__root}/files/anki.json`
   } else if (isGithubPage) {
     // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
-    return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/files/anki.json?raw=true`
+    // return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/files/anki.json?raw=true`
+    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/raw/master/files/anki.json`
   } else {
     // serve .
     // localhost:5000
