@@ -19,7 +19,7 @@ const ruPinyinTextPromise__file_url = () => {
     return `${mychineseSitePrefix__root}/ru-pinyin.txt`
   } else if (isGithubPage) {
     // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
-    return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/ru-pinyin.txt?raw=true`
+    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/ru-pinyin.txt?raw=true`
   } else {
     // serve .
     // localhost:5000
@@ -32,7 +32,7 @@ const hanziAnkiInfoPromise__file_url = (hanzi) => {
     return `${mychineseSitePrefix__root}/files-split/${hanzi}.json`
   } else if (isGithubPage) {
     // https://github.com/USER/PROJECT/blob/gh-pages/PATH_TO_FILE?raw=true
-    return `https://github.com/${window.location.host.replace('.github.io')}/${window.location.host}/blob/master/files-split/${hanzi}.json?raw=true`
+    return `https://github.com/${window.location.host.replace('.github.io', '')}/${window.location.host}/blob/master/files-split/${hanzi}.json?raw=true`
   } else {
     // serve .
     // localhost:5000
