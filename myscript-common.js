@@ -92,9 +92,9 @@ function ruPinyinTextToArray(text) {
 
 const removeLinks = x => x.replace(/<link>[^<]*<\/link>/g, '')
 
-const ruPinyinTextPromise = () => fetch(ruPinyinTextPromise__file_url).then(x => x.text())
+const ruPinyinTextPromise = () => fetch(ruPinyinTextPromise__file_url()).then(x => x.text())
 const hanziAnkiInfoPromise = (hanzi) => fetch(hanziAnkiInfoPromise__file_url(hanzi)).then(x => x.json())
-const allHanziAnkiInfoPromise = () => fetch(allHanziAnkiInfoPromise__file_url).then(x => x.json())
+const allHanziAnkiInfoPromise = () => fetch(allHanziAnkiInfoPromise__file_url()).then(x => x.json())
 
 const asyncLoadAllAnkiInfoAndText = async (hanzi) => {
   const [allHanziAnkiInfo, ruPinyinText] = await Promise.all([
