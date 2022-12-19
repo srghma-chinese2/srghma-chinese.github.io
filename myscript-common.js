@@ -12,7 +12,7 @@ var isBrowser = (function() {
 const isFileSystem = isBrowser && window.location.protocol === "file:"
 const mychineseSitePrefix__root = isFileSystem ? "file:///home/srghma/projects/srghma-chinese" : ""
 const mychineseSitePrefix__elon_musk = isFileSystem ? "file:///home/srghma/projects/srghma-chinese/elon-musk/" : "/elon-musk/"
-const isGithubPage = /srghma-chinese\d*\.github\.io/.test(window.location.host)
+const isGithubPage = isBrowser && /srghma-chinese\d*\.github\.io/.test(window.location.host)
 
 const {
   ruPinyinTextPromise__file_url,

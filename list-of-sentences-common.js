@@ -63,7 +63,8 @@ document.addEventListener("DOMContentLoaded", function(){
     const traditionalText = [...text].map(x => TongWen.s_2_t[x] || x).join('')
 
     ;(async function() {
-      const array = await fetch('/list-of-known-hanzi').then(x => x.json())
+      // const array = await fetch('/list-of-known-hanzi').then(x => x.json())
+      const array = await allHanziAnkiInfoPromise().then(x => Object.keys(x))
       const setOfKnownHanzi = new Set(array)
 
       function addLinks(text) {
@@ -84,7 +85,10 @@ document.addEventListener("DOMContentLoaded", function(){
 
     baiduAudioEl.src = getAudioBaiduUrl(text)
     baiduAudioEl.load()
-    baiduAudioEl.play()
+    baiduAudioEl.play().catch(error => {
+      console.error(error)
+      googleAudioEl.play()
+    })
 
     baiduAudioEl.addEventListener('ended', (event) => {
       googleAudioEl.play()

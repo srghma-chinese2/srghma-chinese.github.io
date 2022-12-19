@@ -135,6 +135,7 @@ const db = (function () {
   gtag('config', 'G-F6PE0WTMBJ');
 </script>
       <script src="https://cdn.jsdelivr.net/npm/canvas-drawing-board@latest/dist/canvas-drawing-board.js"></script>
+      <script src="../myscript-common.js"></script>
       <script defer src="../list-of-sentences-common-bundle.js"></script>
      </head>
      <body>
