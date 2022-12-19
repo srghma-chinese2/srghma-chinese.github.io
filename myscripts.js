@@ -56,13 +56,62 @@ const containerId = 'kanjiIframeContainer'
 
   window.showRootContainer = function(pinyin) {
     reset()
-    document.getElementById(`pinyin__root_container__${pinyin}`).classList.add('pinyin__root_container--show')
+
+    const pinyinPeplace = {
+      'yü':   'yu',
+      'yüe':  'yue',
+      'yüan': 'yuan',
+      'yün':  'yun',
+      'nü':   'nu:',
+      'nüe':  'nu:e',
+      'lü':   'lu:',
+      'lüe':  'lu:e',
+      'jü':   'ju',
+      'jüe':  'jue',
+      'jüan': 'juan',
+      'jün':  'jun',
+      'qü':   'qu',
+      'qüe':  'que',
+      'qüan': 'quan',
+      'qün':  'qun',
+      'xü':   'xu',
+      'xüe':  'xue',
+      'xüan': 'xuan',
+      'xün':  'xun',
+    }
+
+    const pinyinPeplace2 = {
+      'yv':   'yu',
+      'yve':  'yue',
+      'yvan': 'yuan',
+      'yvn':  'yun',
+      'nv':   'nu:',
+      'nve':  'nu:e',
+      'lv':   'lu:',
+      'lve':  'lu:e',
+      'jv':   'ju',
+      'jve':  'jue',
+      'jvan': 'juan',
+      'jvn':  'jun',
+      'qv':   'qu',
+      'qve':  'que',
+      'qvan': 'quan',
+      'qvn':  'qun',
+      'xv':   'xu',
+      'xve':  'xue',
+      'xvan': 'xuan',
+      'xvn':  'xun',
+    }
+
+    const id = `pinyin__root_container__${pinyinPeplace[pinyin] || pinyinPeplace2[pinyin] || pinyin}`
+    // console.log({ id })
+    document.getElementById(id).classList.add('pinyin__root_container--show')
   }
 
   if (!isCurrentPageAHPage) {
     if(window.location.hash) {
       try {
-        const tablePinyin = window.location.hash.slice(1)
+        const tablePinyin = decodeURIComponent(window.location.hash.slice(1))
         window.showRootContainer(tablePinyin)
         document.title = tablePinyin
         // el.scrollIntoView({
