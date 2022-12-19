@@ -1,12 +1,13 @@
 # srghma-chinese
 
 https://srghma-chinese.github.io/
+OR https://srghma-chinese2.github.io/
 
 https://t.me/srghmachinese
 
 https://ankiweb.net/shared/info/1904624237
 
-DICTIONARY IS HERE https://mega.nz/folder/Nh1TgKTB#d6oo1sTLSah-zwXcz-gCvg
+DICTIONARY FOR `goldendict android` IS HERE https://mega.nz/folder/Nh1TgKTB#d6oo1sTLSah-zwXcz-gCvg
 
 ![Imgur](https://i.imgur.com/KTuAfyY.png?1)
 
