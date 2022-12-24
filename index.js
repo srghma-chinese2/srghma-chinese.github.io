@@ -229,9 +229,9 @@ const db = (function () {
 
     /////////////////////////////////////////
 
-    // let allHanziAnkiInfo = await require('fs/promises').readFile('./files/anki.json')
-    // allHanziAnkiInfo = JSON.parse(allHanziAnkiInfo.toString())
-    // let allHanzisWithImages = R.toPairs(allHanziAnkiInfo).filter(([k, { rendered }]) => rendered && rendered.includes("href=\"https://images.yw11.com/zixing/") && rendered.includes(".png\"")).map(([k, _]) => k)
+    let allHanziAnkiInfo = await require('fs/promises').readFile('./files/anki.json')
+    allHanziAnkiInfo = JSON.parse(allHanziAnkiInfo.toString())
+    let allHanzisWithImages = R.toPairs(allHanziAnkiInfo).filter(([k, { rendered }]) => rendered && rendered.includes("href=\"https://images.yw11.com/zixing/") && rendered.includes(".png\"")).map(([k, _]) => k)
     // console.log(allHanzisWithImages)
 
     function hasImage(ch) {
@@ -247,7 +247,7 @@ const db = (function () {
       ...allPeppaHanzi,
       ...allElonHanzi,
       ...allHarariHanzi,
-      // ...allHanzisWithImages
+      ...allHanzisWithImages
     ]), arrayOfKnownHanzi), ...arrayOfKnownHanzi__small])
 
     await require('fs/promises').writeFile(`unknown-hanzi.json`, JSON.stringify(allHanzi))

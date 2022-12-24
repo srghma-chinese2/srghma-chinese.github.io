@@ -18,7 +18,7 @@ const removeLinks = x => x.replace(/<link>[^<]*<\/link>/g, '')
 function ruPinyinTextToArray(text) {
   text = text.split(/―{4,}|-{4,}/)
   text = text.map(x => x.split('\n').map(x => x.trim()).join('\n'))
-  text = text.map(x => x.trim())
+  text = text.map(x => x.split(/_{3,}/).map(x => x.trim()).join(`\n\n______________\n\n`).trim())
   text = text.filter(x => x)
   return text
 }

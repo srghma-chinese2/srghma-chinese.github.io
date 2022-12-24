@@ -175,7 +175,11 @@ const specialChar = "。？！，"
 
 function isHanzi(ch) {
   if ([...ch].length !== 1) { throw new Error(`'${ch}' is not length 1`) }
-  return !specialChar.includes(ch) && (REGEX_JAPANESE.test(ch) || REGEX_CHINESE.test(ch))
+  const isSpecialChar = specialChar.includes(ch)
+  const isJapanese = REGEX_JAPANESE.test(ch)
+  const isChinese = REGEX_CHINESE.test(ch)
+  const isHanzi = !isSpecialChar && (isJapanese || isChinese)
+  return isHanzi
 }
 
 /////////////////////////////////
