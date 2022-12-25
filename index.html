@@ -40,6 +40,7 @@ gtag('config', 'G-F6PE0WTMBJ');
   <button id="audio-load">Audio load</button>
   <button id="baidu-tts-audio--open-new-tab">Baidu open new tab</button>
   <button id="google-tts-audio--open-new-tab">Google open new tab</button>
+  <button id="bkrs--open-new-tab">Bkrs open new tab</button>
 
   <div id="textarea-output" class="strokeorderkanjiorhanzi verylarge" style="margin-top: 50px;"></div>
 
@@ -57,6 +58,10 @@ const getAudioGoogleUrl = text => {
 const getAudioBaiduUrl = text => {
   // return `https://tts.baidu.com/text2audio?cuid=baike&lan=ZH&ctp=1&pdt=301&vol=9&rate=32&per=4&tex=${encodeURIComponent(text)}`
   return `https://fanyi.baidu.com/gettts?lan=zh&text=${encodeURIComponent(text)}&spd=2&source=web`
+};
+
+const getBkrsUrl = text => {
+  return `https://bkrs.info/slovo.php?ch=${encodeURIComponent(text)}`
 };
 
 function update() {
@@ -83,6 +88,7 @@ document.getElementById('audio-load').addEventListener('click', function (event)
 });
 document.getElementById('baidu-tts-audio--open-new-tab').addEventListener('click', function (event) { window.open(getAudioBaiduUrl(textarea.value), '_blank') });
 document.getElementById('google-tts-audio--open-new-tab').addEventListener('click', function (event) { window.open(getAudioGoogleUrl(textarea.value), '_blank') });
+document.getElementById('bkrs--open-new-tab').addEventListener('click', function (event) { window.open(getBkrsUrl(textarea.value), '_blank') });
   </script>
   </body>
 </html>
