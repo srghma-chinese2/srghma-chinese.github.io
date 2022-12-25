@@ -37,7 +37,11 @@ gtag('config', 'G-F6PE0WTMBJ');
   <audio controls loop style="width: 100%;" id="baidu-tts-audio"></audio>
   <audio controls loop style="width: 100%;" id="google-tts-audio"></audio>
 
-  <div id="textarea-output" class="strokeorderkanjiorhanzi verylarge"></div>
+  <button id="audio-load">Audio load</button>
+  <button id="baidu-tts-audio--open-new-tab">Baidu open new tab</button>
+  <button id="google-tts-audio--open-new-tab">Google open new tab</button>
+
+  <div id="textarea-output" class="strokeorderkanjiorhanzi verylarge" style="margin-top: 50px;"></div>
 
   <script>
 const textarea_output = document.querySelector('#textarea-output')
@@ -64,16 +68,21 @@ function update() {
     }
     return [...text].map(ch => isHanzi(ch) ? colorizer(ch) : ch).join('')
   }
-  googleAudioEl.src = getAudioGoogleUrl(text)
-  <!-- googleAudioEl.load() -->
-
-  baiduAudioEl.src = getAudioBaiduUrl(text)
-  <!-- baiduAudioEl.load() -->
   textarea_output.innerHTML = addLinks(text)
 }
 
 update()
 textarea.addEventListener('input', function (event) { update() });
+
+document.getElementById('audio-load').addEventListener('click', function (event) {
+  googleAudioEl.src = getAudioGoogleUrl(textarea.value)
+  googleAudioEl.load()
+
+  baiduAudioEl.src = getAudioBaiduUrl(textarea.value)
+  baiduAudioEl.load()
+});
+document.getElementById('baidu-tts-audio--open-new-tab').addEventListener('click', function (event) { window.open(getAudioBaiduUrl(textarea.value), '_blank') });
+document.getElementById('google-tts-audio--open-new-tab').addEventListener('click', function (event) { window.open(getAudioGoogleUrl(textarea.value), '_blank') });
   </script>
   </body>
 </html>
