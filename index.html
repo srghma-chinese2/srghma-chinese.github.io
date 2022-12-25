@@ -33,11 +33,27 @@ gtag('config', 'G-F6PE0WTMBJ');
   </ul>
 
   <textarea></textarea>
+
+  <audio controls loop style="width: 100%;" id="baidu-tts-audio"></audio>
+  <audio controls loop style="width: 100%;" id="google-tts-audio"></audio>
+
   <div id="textarea-output" class="strokeorderkanjiorhanzi verylarge"></div>
 
   <script>
 const textarea_output = document.querySelector('#textarea-output')
 const textarea = document.querySelector('textarea')
+
+const googleAudioEl = document.getElementById('google-tts-audio')
+const baiduAudioEl = document.getElementById('baidu-tts-audio')
+
+const getAudioGoogleUrl = text => {
+  return `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh&total=1&idx=0&textlen=${text.length}&client=tw-ob&prev=input&ttsspeed=0.24`
+};
+
+const getAudioBaiduUrl = text => {
+  // return `https://tts.baidu.com/text2audio?cuid=baike&lan=ZH&ctp=1&pdt=301&vol=9&rate=32&per=4&tex=${encodeURIComponent(text)}`
+  return `https://fanyi.baidu.com/gettts?lan=zh&text=${encodeURIComponent(text)}&spd=2&source=web`
+};
 
 function update() {
   const text = textarea.value
@@ -48,6 +64,11 @@ function update() {
     }
     return [...text].map(ch => isHanzi(ch) ? colorizer(ch) : ch).join('')
   }
+  googleAudioEl.src = getAudioGoogleUrl(text)
+  <!-- googleAudioEl.load() -->
+
+  baiduAudioEl.src = getAudioBaiduUrl(text)
+  <!-- baiduAudioEl.load() -->
   textarea_output.innerHTML = addLinks(text)
 }
 
