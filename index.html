@@ -1,94 +1,33 @@
 <!DOCTYPE HTML>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Index</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9842250826106845" crossorigin="anonymous"></script>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Index</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9842250826106845" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-F6PE0WTMBJ"></script>
-<link rel="stylesheet" href="main.css">
 <script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-gtag('config', 'G-F6PE0WTMBJ');
+  gtag('config', 'G-F6PE0WTMBJ');
 </script>
-<script src="myscript-common.js"></script>
-  </head>
-  <body class="nightMode" style="text-align: initial;">
-  <ul>
-    <li><a href="f.html">Hanzi table (front)</a></li>
-    <li><a href="b.html">hanzi table (back)</a></li>
-    <li><a href="h.html#段">info for example hanzi (段)</a></li>
-    <li><a href="sherlock.html">sherlock book</a></li>
-    <li><a href="peppa/index.html">peppa</a></li>
-    <li><a href="elon-musk/index.html">elon musk</a></li>
-    <li><a href="elon-musk/unknown-hanzi.html">elon musk (unknown hanzi)</a></li>
-    <li><a href="dict.html">word dictionary - list</a></li>
-    <li><a href="dict-hsk.html">word dictionary - list (hsk)</a></li>
-    <li><a href="dict-7000.html">word dictionary - list (7000 first hanzi)</a></li>
-    <li><a href="dict-show-transl.html">word dictionary - table</a></li>
-    <li><a href="dict-show-6000-transl.html">word dictionary - table (6000 first hanzi)</a></li>
-  </ul>
-
-  <textarea></textarea>
-
-  <audio controls loop style="width: 100%;" id="baidu-tts-audio"></audio>
-  <audio controls loop style="width: 100%;" id="google-tts-audio"></audio>
-
-  <button id="audio-load">Audio load</button>
-  <button id="baidu-tts-audio--open-new-tab">Baidu open new tab</button>
-  <button id="google-tts-audio--open-new-tab">Google open new tab</button>
-  <button id="bkrs--open-new-tab">Bkrs open new tab</button>
-
-  <div id="textarea-output" class="strokeorderkanjiorhanzi verylarge" style="margin-top: 50px;"></div>
-
-  <script>
-const textarea_output = document.querySelector('#textarea-output')
-const textarea = document.querySelector('textarea')
-
-const googleAudioEl = document.getElementById('google-tts-audio')
-const baiduAudioEl = document.getElementById('baidu-tts-audio')
-
-const getAudioGoogleUrl = text => {
-  return `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=zh&total=1&idx=0&textlen=${text.length}&client=tw-ob&prev=input&ttsspeed=0.24`
-};
-
-const getAudioBaiduUrl = text => {
-  // return `https://tts.baidu.com/text2audio?cuid=baike&lan=ZH&ctp=1&pdt=301&vol=9&rate=32&per=4&tex=${encodeURIComponent(text)}`
-  return `https://fanyi.baidu.com/gettts?lan=zh&text=${encodeURIComponent(text)}&spd=2&source=web`
-};
-
-const getBkrsUrl = text => {
-  return `https://bkrs.info/slovo.php?ch=${encodeURIComponent(text)}`
-};
-
-function update() {
-  const text = textarea.value
-  console.log(text)
-  function addLinks(text) {
-    const colorizer = ch => {
-      return `<a target="_blank" href="h.html#${ch}">${ch}</a>`
-    }
-    return [...text].map(ch => isHanzi(ch) ? colorizer(ch) : ch).join('')
-  }
-  textarea_output.innerHTML = addLinks(text)
-}
-
-update()
-textarea.addEventListener('input', function (event) { update() });
-
-document.getElementById('audio-load').addEventListener('click', function (event) {
-  googleAudioEl.src = getAudioGoogleUrl(textarea.value)
-  googleAudioEl.load()
-
-  baiduAudioEl.src = getAudioBaiduUrl(textarea.value)
-  baiduAudioEl.load()
-});
-document.getElementById('baidu-tts-audio--open-new-tab').addEventListener('click', function (event) { window.open(getAudioBaiduUrl(textarea.value), '_blank') });
-document.getElementById('google-tts-audio--open-new-tab').addEventListener('click', function (event) { window.open(getAudioGoogleUrl(textarea.value), '_blank') });
-document.getElementById('bkrs--open-new-tab').addEventListener('click', function (event) { window.open(getBkrsUrl(textarea.value), '_blank') });
-  </script>
-  </body>
-</html>
+      </head>
+      <body>
+      <ul>
+      <li><a href="f.html">Hanzi table (front)</a></li>
+<li><a href="b.html">Hanzi table (back)</a></li>
+<li><a href="h.html#段">Info for example hanzi (段)</a></li>
+<li><a href="sherlock.html">Sherlock book</a></li>
+<li><a href="peppa/index.html">Peppa</a></li>
+<li><a href="elon-musk/index.html">Elon Musk</a></li>
+<li><a href="elon-musk/unknown-hanzi.html">Elon Musk (unknown hanzi)</a></li>
+<li><a href="dict.html">Word dictionary - list</a></li>
+<li><a href="dict-hsk.html">Word dictionary - list (hsk)</a></li>
+<li><a href="dict-7000.html">Word dictionary - list (7000 first hanzi)</a></li>
+<li><a href="dict-show-transl.html">Word dictionary - table</a></li>
+<li><a href="dict-show-6000-transl.html">Word dictionary - table (6000 first hanzi)</a></li>
+      </ul>
+      </body>
+    </html>
