@@ -129,16 +129,24 @@ const asyncLoadHanziAnkiInfoAndAllAnkiInfoAndText = async (hanzi) => {
 function recomputeCacheAndThrowIfDuplicate(ruPinyinArray) {
   const arrayOfValuesToObject = ({ arrayOfKeysField, valueField, array }) => {
     const buffer = {}
-    const duplicateKeys = []
+    const duplicateKeys = {}
+
+    function duplicateKeys_add(hanziThatIsDuplicated, duplicatedWhere) {
+      if (duplicateKeys.hasOwnProperty(hanziThatIsDuplicated)) {
+        duplicateKeys[hanziThatIsDuplicated].push(duplicatedWhere)
+      } else {
+        duplicateKeys[hanziThatIsDuplicated] = [duplicatedWhere]
+      }
+    }
 
     array.forEach(arrayElement => {
       arrayElement[arrayOfKeysField].forEach(key => {
-        if (buffer.hasOwnProperty(key)) { duplicateKeys.push(key) }
+        if (buffer.hasOwnProperty(key)) { duplicateKeys_add(key, arrayElement[valueField]) }
         buffer[key] = arrayElement[valueField]
       })
     })
 
-    if (duplicateKeys.length > 0) { throw new Error(`duplicateKeys: ${JSON.stringify(uniq(duplicateKeys))}`) }
+    if (Object.keys(duplicateKeys).length > 0) { throw new Error(`duplicateKeys: ${JSON.stringify(duplicateKeys, undefined, 2)}`) }
 
     return buffer
   }
