@@ -1,5 +1,9 @@
 # srghma-chinese
 
+IDEA: file ru-pinyin.txt contains translated to russian info about chinese hierogliphs
+
+(mainly from [`汉字字源字典 or 汉语字源字典 (ISBN: 9787301046791)`](https://chinese.stackexchange.com/questions/53487) and from [https://zi.tools](https://zi.tools))
+
 https://srghma-chinese.github.io/
 OR https://srghma-chinese2.github.io/
 
