@@ -22,10 +22,10 @@ require("child_process").execSync(`${__dirname}/node_modules/.bin/browserify ${_
 const dbPath = `${__dirname}/ru-pinyin.txt`
 const db = (function () {
   return {
-    get__ruPinyinObject: () => {
+    get__ruPinyinObject__and_ruPinyinArray: () => {
       let ruPinyinArray = myscriptCommon.ruPinyinTextToArray(require('fs').readFileSync(dbPath).toString())
       let ruPinyinObjectCache = myscriptCommon.recomputeCacheAndThrowIfDuplicate(ruPinyinArray)
-      return ruPinyinObjectCache
+      return { ruPinyinObjectCache, ruPinyinArray }
     },
     getKeys: () => {
       let ruPinyinArray = myscriptCommon.ruPinyinTextToArray(require('fs').readFileSync(dbPath).toString())
@@ -172,9 +172,9 @@ const db = (function () {
   // console.log(hskContent)
 
   app['/elon-musk/unknown-hanzi.html'] = async () => {
-    const ruPinyinObject = db.get__ruPinyinObject()
-    const arrayOfKnownHanzi = Object.keys(ruPinyinObject)
-    const arrayOfKnownHanzi__small = myscriptCommon.mk_ruPinyinObject_small(ruPinyinObject)
+    const { ruPinyinObjectCache, ruPinyinArray } = db.get__ruPinyinObject__and_ruPinyinArray()
+    const arrayOfKnownHanzi = Object.keys(ruPinyinObjectCache)
+    const arrayOfKnownHanzi__small = myscriptCommon.mk_ruPinyinObject_small(ruPinyinObjectCache)
 
     let allPeppaFiles_ = await Promise.all(allPeppaFiles.map(async x => {
       const hanzi = await require('fs/promises').readFile(x.absolutePath)
@@ -241,14 +241,20 @@ const db = (function () {
       return rendered.includes("href=\"https://images.yw11.com/zixing/")
     }
 
-    let allHanzi = R.uniq([...R.difference(R.uniq([
-      ...hsk,
-      ...allHskHanzi,
-      ...allPeppaHanzi,
-      ...allElonHanzi,
-      ...allHarariHanzi,
-      ...allHanzisWithImages
-    ]), arrayOfKnownHanzi), ...arrayOfKnownHanzi__small])
+    const unfinished = R.toPairs(ruPinyinObjectCache).filter(([k, v]) => / --\n/g.test(v)).map(([k, v]) => k)
+    console.log(unfinished)
+
+    let allHanzi = unfinished
+
+    // let allHanzi = R.uniq([...R.difference(R.uniq([
+    //   ...hsk,
+    //   ...allHskHanzi,
+    //   ...allPeppaHanzi,
+    //   ...allElonHanzi,
+    //   ...allHarariHanzi,
+    //   ...allHanzisWithImages,
+    //   ...unfinished,
+    // ]), arrayOfKnownHanzi), ...arrayOfKnownHanzi__small])
 
     await require('fs/promises').writeFile(`unknown-hanzi.json`, JSON.stringify(allHanzi))
 
