@@ -165,7 +165,7 @@ const dict_output_text_purple = R.toPairs(x).map(([key, { purpleculture_hsk, pur
   return `<article><key>${key}</key><definition type="x"><![CDATA[${value}]]></definition></article>`
 }).join('\n\n')
 
-require('fs').writeFileSync(`/home/srghma/Desktop/dictionaries/mychinese/purplecultere-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
+require('fs').writeFileSync(`/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
 <stardict>
 <info>
   <version>3.0.0</version>
@@ -182,7 +182,7 @@ ${dict_output_text_purple}
 </contents>
 </stardict>`)
 
-require("child_process").execSync(`export INPUT="/home/srghma/Desktop/dictionaries/mychinese/purplecultere-textual.xml" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/purplecultere/" && rm -rfd "$OUTPUT"  && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'`)
+require("child_process").execSync(`export INPUT="/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/purpleculture/" && rm -rfd "$OUTPUT"  && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'`)
 
 
 // // https://www.plecoforums.com/threads/hainanese-resources-for-pleco.5825/#post-51457
