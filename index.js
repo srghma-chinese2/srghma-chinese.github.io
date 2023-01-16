@@ -454,51 +454,6 @@ const db = (function () {
     return html
   }
 
-  app[`/index.html`] = async () => {
-    let html = `
-      Hanzi table (front) | f.html
-      Hanzi table (back) | b.html
-      Info for example hanzi (段) | h.html#段
-      Sherlock book | sherlock.html
-      Peppa | peppa/index.html
-      Elon Musk | elon-musk/index.html
-      Elon Musk (unknown hanzi) | elon-musk/unknown-hanzi.html
-      Word dictionary - list | dict.html
-      Word dictionary - list (hsk) | dict-hsk.html
-      Word dictionary - list (7000 first hanzi) | dict-7000.html
-      Word dictionary - table | dict-show-transl.html
-      Word dictionary - table (6000 first hanzi) | dict-show-6000-transl.html
-    `
-
-    html = html.trim().split('\n').map(x => x.split('|').map(R.trim))
-    html = html.map(([h, link]) => `<li><a href="${link}">${h}</a></li>`).join('\n')
-
-    html = `<!DOCTYPE HTML>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Index</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9842250826106845" crossorigin="anonymous"></script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-F6PE0WTMBJ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-F6PE0WTMBJ');
-</script>
-      </head>
-      <body>
-      <ul>
-      ${html}
-      </ul>
-      </body>
-    </html>`
-
-    return html
-  }
-
   app = R.toPairs(app)
 
   await Promise.all(app.map(async ([url, render]) => {
