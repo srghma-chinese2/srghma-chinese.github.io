@@ -105,6 +105,7 @@ const containerId = 'kanjiIframeContainer'
 
     const id = `pinyin__root_container__${pinyinPeplace[pinyin] || pinyinPeplace2[pinyin] || pinyin}`
     // console.log({ id })
+    document.title = pinyin
     document.getElementById(id).classList.add('pinyin__root_container--show')
   }
 
@@ -318,6 +319,26 @@ const containerId = 'kanjiIframeContainer'
     })
     window.document.body.insertBefore(ruPinyinPreDummyElement, window.document.body.firstChild)
   }
+})();
+
+////////////
+
+;(function insertGoUpButton() {
+  const upButtonElement = document.createElement('button')
+  upButtonElement.style.cssText = 'position: fixed; right: 20px; top: 20px;'
+  upButtonElement.textContent = 'Up'
+  upButtonElement.addEventListener("click", function (e) {
+    window.scrollTo(0, 0);
+  })
+  window.document.body.insertBefore(upButtonElement, window.document.body.firstChild)
+
+  const toIndexElement = document.createElement('button')
+  toIndexElement.style.cssText = 'position: fixed; right: 20px; top: 50px;'
+  toIndexElement.textContent = 'Index'
+  toIndexElement.addEventListener("click", function (e) {
+    window.open(`${mychineseSitePrefix__root}/index.html`, '_blank').focus()
+  })
+  window.document.body.insertBefore(toIndexElement, window.document.body.firstChild)
 })();
 
 ////////////
