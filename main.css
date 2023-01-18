@@ -86,6 +86,11 @@ pre {
 
 .key { font-size: 30px; background-color: cornflowerblue; }
 .my-pinyin-hanzi { font-size: 28px; }
+.my-pinyin-hanzi .sim, .my-pinyin-hanzi .trad {
+  font-size: 55px;
+  font-family: "CNstrokeorder", "KanjiStrokeOrders";
+  line-height: 1;
+}
 .my-pinyin-english { color: #d8d8ff; }
 
 /***************************/
