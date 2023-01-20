@@ -356,7 +356,7 @@ const containerId = 'kanjiIframeContainer'
     // TODO skip if ends on 5
     const audioEl = document.createElement('audio');
     audioEl.style.cssText = 'display: none;';
-    audioEl.src = `${rootUrl__srghmaChineseFiles__collectionMedia}/allsetlearning-${text}.mp3`
+    audioEl.src = isFileSystem ? `${rootUrl__srghmaChineseFiles__collectionMedia}/allsetlearning-${text}.mp3` : `https://resources.allsetlearning.com/pronwiki/resources/pinyin-audio/${text}.mp3`
     audioEl.load()
     audioEl.autoplay = true;
     await audioEl.play()
