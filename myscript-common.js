@@ -14,6 +14,8 @@ const mychineseSitePrefix__root = isFileSystem ? "file:///home/srghma/projects/s
 const mychineseSitePrefix__elon_musk = isFileSystem ? "file:///home/srghma/projects/srghma-chinese/elon-musk/" : "/elon-musk/"
 const isGithubPage = isBrowser && /srghma-chinese\d*\.github\.io/.test(window.location.host)
 
+const rootUrl__srghmaChineseFiles__collectionMedia = isFileSystem ? `file:///home/srghma/projects/srghma-chinese-files/collection.media` : `https://srghma-chinese-files.github.io/collection.media`
+
 const {
   ruPinyinTextPromise__file_url,
   hanziAnkiInfoPromise__file_url,

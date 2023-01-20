@@ -356,7 +356,7 @@ const containerId = 'kanjiIframeContainer'
     // TODO skip if ends on 5
     const audioEl = document.createElement('audio');
     audioEl.style.cssText = 'display: none;';
-    audioEl.src = `file:///home/srghma/projects/srghma-chinese-files/collection.media/allsetlearning-${text}.mp3`
+    audioEl.src = `${rootUrl__srghmaChineseFiles__collectionMedia}/allsetlearning-${text}.mp3`
     audioEl.load()
     audioEl.autoplay = true;
     await audioEl.play()
