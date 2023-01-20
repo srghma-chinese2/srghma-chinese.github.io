@@ -11,7 +11,7 @@ file `ru-pinyin.txt` contains info about chinese hieroglyphs
 https://srghma-chinese.github.io/
 OR https://srghma-chinese2.github.io/
 
-https://t.me/srghmachinese
+https://t.me/srghmachinese (announce on [bkrs.info](https://bkrs.info/taolun/thread-332123-post-794062.html))
 
 https://ankiweb.net/shared/info/1904624237
 
