@@ -85,10 +85,10 @@ const containerId = 'kanjiIframeContainer'
       'yve':  'yue',
       'yvan': 'yuan',
       'yvn':  'yun',
-      'nv':   'nu:',
-      'nve':  'nu:e',
-      'lv':   'lu:',
-      'lve':  'lu:e',
+      // 'nv':   'nu:',
+      // 'nve':  'nu:e',
+      // 'lv':   'lu:',
+      // 'lve':  'lu:e',
       'jv':   'ju',
       'jve':  'jue',
       'jvan': 'juan',
@@ -103,8 +103,13 @@ const containerId = 'kanjiIframeContainer'
       'xvn':  'xun',
     }
 
-    const id = `pinyin__root_container__${pinyinPeplace[pinyin] || pinyinPeplace2[pinyin] || pinyin}`
-    // console.log({ id })
+    // on file:///home/srghma/projects/srghma-chinese/f.html#nve it's nve
+    // on file:///home/srghma/projects/srghma-chinese/f.html#jv it's ju
+    // file:///home/srghma/projects/srghma-chinese/f.html#den - doesnt exist
+
+    const fixedPinyin = pinyinPeplace[pinyin] || pinyinPeplace2[pinyin] || pinyin
+    const id = `pinyin__root_container__${fixedPinyin}`
+    console.log({ id, fixedPinyin })
     document.title = pinyin
     document.getElementById(id).classList.add('pinyin__root_container--show')
   }
@@ -339,6 +344,23 @@ const containerId = 'kanjiIframeContainer'
     window.open(`${mychineseSitePrefix__root}/index.html`, '_blank').focus()
   })
   window.document.body.insertBefore(toIndexElement, window.document.body.firstChild)
+})();
+
+
+;(function() {
+  if (isCurrentPageAHPage) { return }
+  console.log('asdfasdf')
+  document.querySelectorAll('.pinyin__header').forEach(el => el.addEventListener("click", async function (e) {
+    const text = markToNumber(e.target.textContent)
+    console.log(text)
+    // TODO skip if ends on 5
+    const audioEl = document.createElement('audio');
+    audioEl.style.cssText = 'display: none;';
+    audioEl.src = `file:///home/srghma/projects/srghma-chinese-files/collection.media/allsetlearning-${text}.mp3`
+    audioEl.load()
+    audioEl.autoplay = true;
+    await audioEl.play()
+  }))
 })();
 
 ////////////
