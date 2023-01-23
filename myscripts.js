@@ -167,7 +167,7 @@ const containerId = 'kanjiIframeContainer'
 
     const containerElement = document.getElementById(containerId)
     if (hanziAnkiInfo) {
-      showText(containerElement, hanziAnkiInfo.rendered)
+      showText(hanzi, containerElement, hanziAnkiInfo.rendered)
     }
     document.title = hanzi
 
