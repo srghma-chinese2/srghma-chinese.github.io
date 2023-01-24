@@ -14,6 +14,7 @@
 
   gtag('config', 'G-F6PE0WTMBJ');
 </script>
+<script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js"></script>
 <script src="myscript-common.js"></script>
   </head>
   <body class="nightMode" style="text-align: initial;">
@@ -24,11 +25,12 @@
   </table>
 
   <script>
-const tbody = document.querySelector('#tbody')
+const tbody = document.querySelector('#tbody');
 
-const images = input.map(showChar)
+tbody.innerHTML = r12345_chars.map(function (x) { return `<tr><td>${x}</td><td><img class="lazy" data-src="${r12345_showChar__src(x)}" height="500"></td></tr>` }).join('');
 
-tbody.innerHTML = images.map(x => ).map(x => `<tr><td>${x}</td></tr>`).join('')
+const myLazyLoad = new LazyLoad();
+myLazyLoad.update();
   </script>
   </body>
 </html>
