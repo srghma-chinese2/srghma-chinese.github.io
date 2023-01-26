@@ -240,10 +240,10 @@ function showText(hanzi, containerElement, text) {
   }
 
   // bc it's the same
-  // if (r12345_chars.includes(hanzi)) {
-  //   const src = r12345_showChar__src(hanzi)
-  //   text = text + `<img src="${src}" height="500">`
-  // }
+  if (r12345_chars.includes(hanzi)) {
+    const src = r12345_showChar__src(hanzi)
+    text = text + `<img src="${src}" height="500">`
+  }
 
   containerElement.innerHTML = text
 
