@@ -19,7 +19,7 @@ function ruPinyinTextToArray(text) {
   text = text.replace(/\t/g, '').split(/―{4,}|-{4,}/)
   text = text.map(x => x.split('\n').map(x => x.trim()).join('\n'))
   text = text.map(x => x.split(/_{3,}/).map(x => x.trim()).filter(x => x).join(`\n\n______________\n\n`))
-  text = text.filter(x => x)
+  text = text.filter(x => x.length > 0)
   return text
 }
 
@@ -137,7 +137,7 @@ const removeHTML = require('/home/srghma/projects/anki-cards-from-pdf/scripts/li
 const { JSDOM } = require("jsdom");
 const dom = new JSDOM(``);
 
-const dict_output_text_purple = R.toPairs(x).map(([key, { purpleculture_hsk, purpleculture_info, purpleculture_tree, charactersWithComponent }]) => {
+const dict_output_text_purple = R.toPairs(x).map(([key, { purpleculture_hsk, purpleculture_info, purpleculture_tree, charactersWithComponent, charactersWithComponent_hanziyuan }]) => {
   // if (key !== '着') { return }
   const process = (text) => {
     text = text.replace(/\n+/g, '\n')
@@ -156,10 +156,11 @@ const dict_output_text_purple = R.toPairs(x).map(([key, { purpleculture_hsk, pur
   if (purpleculture_tree) { purpleculture_tree = process(purpleculture_tree) }
   if (purpleculture_info) { purpleculture_info = process(purpleculture_info) }
   let value = [
-    purpleculture_info      ? `purpleculture_info: ${purpleculture_info}` : '',
-    purpleculture_hsk       ? `purpleculture_hsk: ${purpleculture_hsk}` : '',
-    purpleculture_tree      ? `purpleculture_info: ${purpleculture_tree}` : '',
-    charactersWithComponent ? `charactersWithComponent: ${charactersWithComponent.join(", ")}` : '',
+    purpleculture_info                ? `purpleculture_info: ${purpleculture_info}` : '',
+    purpleculture_hsk                 ? `purpleculture_hsk: ${purpleculture_hsk}` : '',
+    purpleculture_tree                ? `purpleculture_info: ${purpleculture_tree}` : '',
+    charactersWithComponent           ? `charactersWithComponent: ${charactersWithComponent.join(", ")}` : '',
+    charactersWithComponent_hanziyuan ? `charactersWithComponent_hanziyuan: ${charactersWithComponent_hanziyuan.join(", ")}` : '',
   ].filter(x => x).join('<br/>')
   // console.log(value)
   return `<article><key>${key}</key><definition type="x"><![CDATA[${value}]]></definition></article>`

@@ -24,6 +24,9 @@ pre {
 
 /* @font-face { font-family: TH-Tshyn; src: url('fonts/TH-Tshyn-P0-1000.ttf'), url('fonts/TH-Tshyn-P1-1000.ttf'), url('fonts/TH-Tshyn-P2-1000.ttf'), url('fonts/TH-Tshyn-P16-1000.ttf'); } */
 
+/* @font-face { font-family: HDZB74; src: url('HDZB_74.TTF') } */
+/* @font-face { font-family: HDZB75; src: url('HDZB_75.TTF') } */
+
 @font-face { font-family: CNstrokeorder; src: url('srghma-chinese-files/fonts/CNstrokeorder.ttf'), url('https://srghma-chinese-files.github.io/fonts/CNstrokeorder.ttf'); }
 @font-face { font-family: KanjiStrokeOrders; src: url('srghma-chinese-files/fonts/KanjiStrokeOrders.ttf'), url('https://srghma-chinese-files.github.io/fonts/KanjiStrokeOrders.ttf'); }
 
@@ -167,16 +170,16 @@ pre {
 .my-pinyin-ru { font-size: 20px; }
 
 .strokeorderkanjiorhanzi {
-  font-family: "CNstrokeorder", "KanjiStrokeOrders";
+  font-family: 'CNstrokeorder', 'KanjiStrokeOrders';
   line-height: 1;
 }
 
 .strokeorderkanji {
-  font-family: "KanjiStrokeOrders";
+  font-family: 'KanjiStrokeOrders';
   line-height: 1;
 }
 .strokeorderhanzi {
-  font-family: "CNstrokeorder";
+  font-family: 'CNstrokeorder';
   line-height: 1;
 }
 

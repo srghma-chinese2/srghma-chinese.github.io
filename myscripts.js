@@ -173,6 +173,26 @@ const containerId = 'kanjiIframeContainer'
 
     // console.log(hanziAnkiInfo)
 
+    ;(function(){
+      try {
+        const element = document.createElement('div')
+        const parent = document.getElementById('purpleculture_info') || window.document.body.firstChild
+        // console.log(parent)
+        parent.parentElement.insertBefore(element, parent)
+
+        const writer = HanziWriter.create(element, hanzi, {
+          width: 100,
+          height: 100,
+          padding: 5,
+          delayBetweenLoops: 3000,
+        });
+        // writer.loopCharacterAnimation()
+        writer.quiz()
+      } catch (e) {
+        console.error(e)
+      }
+    })();
+
     // play audio
     ;(async function() {
       try {
