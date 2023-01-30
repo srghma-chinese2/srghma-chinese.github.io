@@ -210,9 +210,13 @@ const uniq = array => [...new Set(array)]
 function showText(hanzi, containerElement, text) {
   // console.log(text)
 
+  const linkTranchinese = x => `<a target="_blank" href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}&tcLanguage=ru">${x}</a>`
+
   const other_links = [
-    `<a href="https://zi.tools/zi/$1">zitools</a>`,
-    `<a href="https://bkrs.info/slovo.php?ch=$1">bkrs</a>`,
+    `<a target="_blank" href="https://zi.tools/zi/$1">zitools</a>`,
+    `<a target="_blank" href="https://bkrs.info/slovo.php?ch=$1">bkrs</a>`,
+    linkTranchinese(`${hanzi}*`),
+    linkTranchinese(`*${hanzi}`),
   ].join(` | `)
 
   text = text.replace(/(.)">yw11<\/a>/g, `$1">yw11</a> | ${other_links}`)
