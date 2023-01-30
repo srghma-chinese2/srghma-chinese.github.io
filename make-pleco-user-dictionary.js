@@ -66,6 +66,17 @@ const getTone = R.cond([
   [R.T,         temp => { throw new Error(temp) }]
 ])
 
+const colorizeHanzi = x => {
+  const dict_hanzis = hanzijs.definitionLookup(x)
+  if (!dict_hanzis) { return x }
+  const dict_hanzi = dict_hanzis[0]
+  const tone = parseInt(R.last(dict_hanzi.pinyin), 10)
+  const toneColor = getTone(tone)
+  return `<c c="${toneColor}">${x}</c>`
+}
+
+const colorizeHanzi__in_text = x => [...x].map(colorizeHanzi).join('')
+
 const dict_output_text = ruPinyinArray_.map(({ text, hanzi }) => {
   if (/[^k-]>/g.test(text)) { throw new Error(text) }
   if (text.includes('&')) { throw new Error(text) }
@@ -90,15 +101,7 @@ const dict_output_text = ruPinyinArray_.map(({ text, hanzi }) => {
   // https://github.com/huzheng001/stardict-3/blob/master/dict/doc/TextualDictionaryFileFormat
   // https://github.com/huzheng001/stardict-3/blob/master/dict/doc/StarDictFileFormat
   // https://github.com/huzheng001/stardict-3/blob/master/dict/doc/stardict-textual-dict-example.xml
-  let value = text.replace(/\n/g, '<br/>')
-  value = [...value].map(x => {
-    const dict_hanzis = hanzijs.definitionLookup(x)
-    if (!dict_hanzis) { return x }
-    const dict_hanzi = dict_hanzis[0]
-    const tone = parseInt(R.last(dict_hanzi.pinyin), 10)
-    const toneColor = getTone(tone)
-    return `<c c="${toneColor}">${x}</c>`
-  }).join('')
+  const value = colorizeHanzi__in_text(text.replace(/\n/g, '<br/>'))
   return `<article>${[hanzi_1_, ...hanzi_other_].join("\n")}<definition type="x"><![CDATA[${value}]]></definition></article>`
 }).join('\n\n')
 
@@ -126,7 +129,12 @@ ${dict_output_text}
 </contents>
 </stardict>`)
 
-require("child_process").execSync(`export INPUT="/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict-textual.xml" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict/" && rm -rfd "$OUTPUT"  && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'`)
+const mkStardict = (input, output) => require("child_process").execSync(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rfd "$OUTPUT" && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'`)
+
+const mkAard = (input, output) => require("child_process").execSync(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rf "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Aard2Slob'`)
+
+mkStardict("/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict/")
+mkAard("/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict.slob")
 
 const x = JSON.parse(require('fs').readFileSync('./files/anki.json').toString()); null
 
@@ -156,15 +164,17 @@ const dict_output_text_purple = R.toPairs(x).map(([key, { purpleculture_hsk, pur
   if (purpleculture_tree) { purpleculture_tree = process(purpleculture_tree) }
   if (purpleculture_info) { purpleculture_info = process(purpleculture_info) }
 
-  const linkTranchinese = x => `<iref href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}&tcLanguage=ru">${x}</iref>`
+  // WHF!!! bc of &??
+  // const linkTranchinese = x => `<iref href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}&tcLanguage=ru">${x}</iref>`
+  const linkTranchinese = x => `<iref href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}">${x}</iref>`
 
   let value = [
-    purpleculture_info                ? `purpleculture_info: ${purpleculture_info}` : '',
+    purpleculture_info                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_info)}` : '',
     purpleculture_hsk                 ? `purpleculture_hsk: ${purpleculture_hsk}` : '',
-    purpleculture_tree                ? `purpleculture_info: ${purpleculture_tree}` : '',
-    charactersWithComponent           ? `charactersWithComponent: ${charactersWithComponent.join(", ")}` : '',
-    charactersWithComponent_hanziyuan ? `charactersWithComponent_hanziyuan: ${charactersWithComponent_hanziyuan.join(", ")}` : '',
-    // `tranchinese: ${linkTranchinese(`${key}*`)}, ${linkTranchinese(`*${key}`)}`
+    purpleculture_tree                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_tree)}` : '',
+    charactersWithComponent           ? `charactersWithComponent: ${charactersWithComponent.map(colorizeHanzi).join(", ")}` : '',
+    charactersWithComponent_hanziyuan ? `charactersWithComponent_hanziyuan: ${charactersWithComponent_hanziyuan.map(colorizeHanzi).join(", ")}` : '',
+    `tranchinese: ${linkTranchinese(`${key}*`)}, ${linkTranchinese(`*${key}`)}`
   ].filter(x => x).join('<br/>')
   // console.log(value)
   return `<article><key>${key}</key><definition type="x"><![CDATA[${value}]]></definition></article>`
@@ -187,8 +197,8 @@ ${dict_output_text_purple}
 </contents>
 </stardict>`)
 
-require("child_process").execSync(`export INPUT="/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/purpleculture/" && rm -rfd "$OUTPUT"  && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'`)
-
+mkStardict("/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture/")
+mkAard("/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture.slob")
 
 // // https://www.plecoforums.com/threads/hainanese-resources-for-pleco.5825/#post-51457
 // // https://www.plecoforums.com/threads/user-dictionaries-creation-import-file-format-etc.6934/#post-51042
