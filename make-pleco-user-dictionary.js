@@ -10,7 +10,7 @@ const splitBySeparator = require('/home/srghma/projects/anki-cards-from-pdf/scri
 const TongWen = require('/home/srghma/projects/anki-cards-from-pdf/scripts/lib/TongWen').TongWen
 const hanzijs = require("hanzi");
 //Initiate
-// hanzijs.start();
+hanzijs.start();
 
 const removeHTML = require('/home/srghma/projects/anki-cards-from-pdf/scripts/lib/removeHTML').removeHTML
 const { JSDOM } = require("jsdom");
@@ -48,9 +48,9 @@ function throwIfDuplicate(ruPinyinArray) {
 
 // __dirname = '.'
 const dbPath = `${__dirname}/ru-pinyin.txt`
-// const ruPinyinArray = ruPinyinTextToArray(require('fs').readFileSync(dbPath).toString())
-const ruPinyinArray = []
-// require('fs').writeFileSync(dbPath, ruPinyinArray.join(`\n\n------------\n\n`))
+const ruPinyinArray = ruPinyinTextToArray(require('fs').readFileSync(dbPath).toString())
+// const ruPinyinArray = []
+require('fs').writeFileSync(dbPath, ruPinyinArray.join(`\n\n------------\n\n`))
 let ruPinyinArray_ = ruPinyinArray.map(text => ({ text, hanzi: R.uniq([...(removeLinks(text))].filter(isHanzi)) }))
 // ruPinyinArray_ = ruPinyinArray_.slice(825, 830)
 throwIfDuplicate(ruPinyinArray_)
@@ -118,7 +118,7 @@ const srghma_chinese_stardict_textual__text = ruPinyinArray_.map(({ text, hanzi 
 // [--source-lang=LANGUAGE] [--target-lang=LANGUAGE]
 // ['--name=GLOSSARY NAME']
 
-require('fs').writeFileSync(`/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
+require('fs').writeFileSync(`/tmp/srghma-chinese-stardict-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
 <stardict>
 <info>
   <version>3.0.0</version>
@@ -139,11 +139,11 @@ const mkStardict = (input, output) => require("child_process").execSync(`export 
 
 const mkAard = (input, output) => require("child_process").execSync(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rf "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Aard2Slob'`)
 
-// mkStardict("/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict/")
-// mkAard("/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict.slob")
+mkStardict("/tmp/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict/")
+// mkAard("/tmp/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict.slob")
 
-// const ankiJson = JSON.parse(require('fs').readFileSync('./files/anki.json').toString()); null
-const ankiJson = {}
+const ankiJson = JSON.parse(require('fs').readFileSync('./files/anki.json').toString()); null
+// const ankiJson = {}
 
 // R.toPairs(ankiJson).map(([key, value]) => {
 // })
@@ -184,7 +184,7 @@ const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_h
   return `<article><key>${key}</key><definition type="x"><![CDATA[${value}]]></definition></article>`
 }).join('\n\n')
 
-require('fs').writeFileSync(`/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
+require('fs').writeFileSync(`/tmp/purpleculture-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
 <stardict>
 <info>
   <version>3.0.0</version>
@@ -201,8 +201,8 @@ ${dict_output_text_purple}
 </contents>
 </stardict>`)
 
-// mkStardict("/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture/")
-// mkAard("/home/srghma/Desktop/dictionaries/mychinese/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture.slob")
+mkStardict("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture/")
+// mkAard("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture.slob")
 
 const trainchinese_with_cache_path = '/home/srghma/projects/anki-cards-from-pdf/trainchinese_cache.json'
 let trainchinese_cache = {}
@@ -287,7 +287,7 @@ const alltrainchinese__hierogliphs = R.uniq([...trainchinese_cache_.map(x => x.c
 //   return { ch, rendered: `${ch} | ${type} | ${pinyin} | ${transl}` }
 // })
 
-const trainchinese_textual__writer = require('fs').createWriteStream(`/home/srghma/Desktop/dictionaries/mychinese/trainchinese-textual.xml`)
+const trainchinese_textual__writer = require('fs').createWriteStream(`/tmp/trainchinese-textual.xml`)
 
 trainchinese_textual__writer.on('error', err => console.error(err))
 
@@ -321,7 +321,8 @@ trainchinese_textual__writer.on('open', async function() {
     const get = r => {
       const [matches, doesntmatch] = R.partition(s => (new RegExp(r)).test(s.ch), trainchinese_cache_current)
       trainchinese_cache_current = doesntmatch
-      return matches
+      // return matches
+      return R.sortBy(x => x.pinyin, matches)
     }
 
     let value = {
@@ -387,7 +388,7 @@ trainchinese_textual__writer.on('open', async function() {
       console.error('Stream failed.', err);
     } else {
       console.log('Stream is done reading.');
-      mkStardict("/home/srghma/Desktop/dictionaries/mychinese/trainchinese-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/trainchinese/")
+      mkStardict("/tmp/trainchinese-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/trainchinese/")
     }
   })
 })
