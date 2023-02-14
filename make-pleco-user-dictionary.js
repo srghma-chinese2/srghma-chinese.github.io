@@ -360,12 +360,33 @@ trainchinese_textual__writer.on('open', async function() {
     }
 
     let value = {
-      ' ':     get(`^${key}$`),
-      'x.':    get(`^${key}.$`),
-      '.x':    get(`^.${key}$`),
-      'x..':   get(`^${key}..$`),
-      '.x.':   get(`^.${key}.$`),
-      '..x':   get(`^..${key}$`),
+      ' ': get(`^${key}$`),
+
+      'x.': get(`^${key}.$`),
+      '.x': get(`^.${key}$`),
+
+      'x..': get(`^${key}..$`),
+      '.x.': get(`^.${key}.$`),
+      '..x': get(`^..${key}$`),
+
+      'x...': get(`^${key}...$`),
+      '.x..': get(`^.${key}..$`),
+      '..x.': get(`^..${key}.$`),
+      '...x': get(`^...${key}$`),
+
+      'x....': get(`^${key}....$`),
+      '.x...': get(`^.${key}...$`),
+      '..x..': get(`^..${key}..$`),
+      '...x.': get(`^...${key}.$`),
+      '....x': get(`^....${key}$`),
+
+      'x.....': get(`^${key}.....$`),
+      '.x....': get(`^.${key}....$`),
+      '..x...': get(`^..${key}...$`),
+      '...x..': get(`^...${key}..$`),
+      '....x.': get(`^....${key}.$`),
+      '.....x': get(`^.....${key}$`),
+
       'x*':    get(`^${key}`),
       // '*x':    get(`${key}$`),
       'other': get(`.`),
@@ -384,7 +405,7 @@ trainchinese_textual__writer.on('open', async function() {
       }
 
       return [
-        k.trim() ? `<br/><big>${k}</big><br/>` : null,
+        k.trim() ? `<big>${k}</big>` : null,
         ...(v.map(print(!!k.trim())))
       ]
     }).flat().filter(x => x).join('<br/>')
