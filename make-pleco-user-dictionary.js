@@ -9,12 +9,56 @@ const isHanzi = require('/home/srghma/projects/anki-cards-from-pdf/scripts/lib/i
 const splitBySeparator = require('/home/srghma/projects/anki-cards-from-pdf/scripts/lib/splitBySeparator').splitBySeparator
 const TongWen = require('/home/srghma/projects/anki-cards-from-pdf/scripts/lib/TongWen').TongWen
 const hanzijs = require("hanzi");
+
+const pinyinSplit = require('pinyin-split')
+// const pinyinOrHanzi = require('pinyin-or-hanzi')
+const pinyinUtils = require('pinyin-utils')
+
+// const pinyinTone = require('pinyin-tone')
+// const pinyinConvert = require('pinyin-convert')
 //Initiate
 hanzijs.start();
 
+// https://github.com/pepebecker/pinyin-convert/blob/master/index.js
+const convertPinyin__marked_to_numbered = text => {
+  // // https://stackoverflow.com/questions/34629460/how-to-detect-chinese-character-with-punctuation-in-regex
+  // // https://stackoverflow.com/questions/4328500/how-can-i-strip-all-punctuation-from-a-string-in-javascript-using-regex
+  // const punctuationRegEx = /[!-/:-@[-`{-~¡-©«-¬®-±´¶-¸»¿×÷˂-˅˒-˟˥-˫˭˯-˿͵;΄-΅·϶҂՚-՟։-֊־׀׃׆׳-״؆-؏؛؞-؟٪-٭۔۩۽-۾܀-܍߶-߹।-॥॰৲-৳৺૱୰௳-௺౿ೱ-ೲ൹෴฿๏๚-๛༁-༗༚-༟༴༶༸༺-༽྅྾-࿅࿇-࿌࿎-࿔၊-၏႞-႟჻፠-፨᎐-᎙᙭-᙮᚛-᚜᛫-᛭᜵-᜶។-៖៘-៛᠀-᠊᥀᥄-᥅᧞-᧿᨞-᨟᭚-᭪᭴-᭼᰻-᰿᱾-᱿᾽᾿-῁῍-῏῝-῟῭-`´-῾\u2000-\u206e⁺-⁾₊-₎₠-₵℀-℁℃-℆℈-℉℔№-℘℞-℣℥℧℩℮℺-℻⅀-⅄⅊-⅍⅏←-⏧␀-␦⑀-⑊⒜-ⓩ─-⚝⚠-⚼⛀-⛃✁-✄✆-✉✌-✧✩-❋❍❏-❒❖❘-❞❡-❵➔➘-➯➱-➾⟀-⟊⟌⟐-⭌⭐-⭔⳥-⳪⳹-⳼⳾-⳿⸀-\u2e7e⺀-⺙⺛-⻳⼀-⿕⿰-⿻\u3000-〿゛-゜゠・㆐-㆑㆖-㆟㇀-㇣㈀-㈞㈪-㉃㉐㉠-㉿㊊-㊰㋀-㋾㌀-㏿䷀-䷿꒐-꓆꘍-꘏꙳꙾꜀-꜖꜠-꜡꞉-꞊꠨-꠫꡴-꡷꣎-꣏꤮-꤯꥟꩜-꩟﬩﴾-﴿﷼-﷽︐-︙︰-﹒﹔-﹦﹨-﹫！-／：-＠［-｀｛-･￠-￦￨-￮￼-�]|\ud800[\udd00-\udd02\udd37-\udd3f\udd79-\udd89\udd90-\udd9b\uddd0-\uddfc\udf9f\udfd0]|\ud802[\udd1f\udd3f\ude50-\ude58]|\ud809[\udc00-\udc7e]|\ud834[\udc00-\udcf5\udd00-\udd26\udd29-\udd64\udd6a-\udd6c\udd83-\udd84\udd8c-\udda9\uddae-\udddd\ude00-\ude41\ude45\udf00-\udf56]|\ud835[\udec1\udedb\udefb\udf15\udf35\udf4f\udf6f\udf89\udfa9\udfc3]|\ud83c[\udc00-\udc2b\udc30-\udc93]/g;
+  // text = text.replace(punctuationRegEx, ' ')
+  const words = pinyinSplit.split(text, true)
+  return pinyinUtils.markToNumber(words, false).join('')
+}
+
+// convertPinyin__marked_to_numbered("nǎ gè xīng,  zuò， zuì pǐ pèi ?")
+// before 'na3 ge4 xing1,  5zuo4， 5zui4 pi3 pei4 ?5'
+// now 'na3 ge4 xing1   zuo4  zui4 pi3 pei4  '
+// 'na3 ge4 xing1,  zuo4， zui4 pi3 pei4 ?'
+
 const removeHTML = require('/home/srghma/projects/anki-cards-from-pdf/scripts/lib/removeHTML').removeHTML
 const { JSDOM } = require("jsdom");
-const dom = new JSDOM(``);
+const dom = new JSDOM(``)
+
+const { finished } = require('node:stream')
+const { once } = require('events')
+
+async function writeWithAwait(writable, chunk) {
+  if (!writable.write(chunk)) {
+    // Handle backpressure
+    await once(writable, 'drain')
+  }
+}
+
+function finishedAwait(stream) {
+  return new Promise((resolve, reject) => {
+    finished(stream, err => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
 
 ///////////////////////////////////////////
 
@@ -25,19 +69,21 @@ function ruPinyinTextToArray(text) {
   text = text.map(x => x.split('\n').map(x => x.trim()).join('\n'))
   text = text.map(x => x.split(/_{3,}/).map(x => x.trim()).filter(x => x).join(`\n\n______________\n\n`))
   text = text.filter(x => x.length > 0)
+  text = text.map(x => x.replace(/^([\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d][\u3040-\u309f]|[\u30a0-\u30ff]|[\u4e00-\u9faf]|[\u3400-\u4dbf])([\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d][\u3040-\u309f]|[\u30a0-\u30ff]|[\u4e00-\u9faf]|[\u3400-\u4dbf])/g, '$1 $2'))
+  // text = text.map(colorPinyin)
   return text
 }
 
 function getDuplicatedItems(someArray) {
-    // check for misuse if desired
-    // if (!Array.isArray(someArray)) {
-    //     throw new TypeError(`getDuplicatedItems requires an Array type, received ${typeof someArray} type.`);
-    // }
-    const itemSet = new Set(someArray);
-    const duplicatedItems = [...itemSet].filter(
-        (item) => someArray.indexOf(item) !== someArray.lastIndexOf(item)
-    );
-    return duplicatedItems;
+  // check for misuse if desired
+  // if (!Array.isArray(someArray)) {
+  //     throw new TypeError(`getDuplicatedItems requires an Array type, received ${typeof someArray} type.`);
+  // }
+  const itemSet = new Set(someArray);
+  const duplicatedItems = [...itemSet].filter(
+      (item) => someArray.indexOf(item) !== someArray.lastIndexOf(item)
+  );
+  return duplicatedItems;
 }
 
 function throwIfDuplicate(ruPinyinArray) {
@@ -46,11 +92,10 @@ function throwIfDuplicate(ruPinyinArray) {
   throw new Error(duplicated.join(','))
 }
 
-// __dirname = '.'
-const dbPath = `${__dirname}/ru-pinyin.txt`
-const ruPinyinArray = ruPinyinTextToArray(require('fs').readFileSync(dbPath).toString())
+const dbPath = `/home/srghma/projects/srghma-chinese/ru-pinyin.txt`
+const ruPinyinArray = ruPinyinTextToArray(fs.readFileSync(dbPath).toString())
 // const ruPinyinArray = []
-require('fs').writeFileSync(dbPath, ruPinyinArray.join(`\n\n------------\n\n`))
+fs.writeFileSync(dbPath, ruPinyinArray.join(`\n\n------------\n\n`))
 let ruPinyinArray_ = ruPinyinArray.map(text => ({ text, hanzi: R.uniq([...(removeLinks(text))].filter(isHanzi)) }))
 // ruPinyinArray_ = ruPinyinArray_.slice(825, 830)
 throwIfDuplicate(ruPinyinArray_)
@@ -64,11 +109,16 @@ const getTone = R.cond([
   // [R.equals(3), R.always('violet')],
   // [R.equals(4), R.always('red')],
   // [R.equals(5), R.always('gray')],
-  [R.equals(1), R.always('#929eff')],
-  [R.equals(2), R.always('#88ffc9')],
-  [R.equals(3), R.always('#cb59ff')],
-  [R.equals(4), R.always('#ff6f7c')],
-  [R.equals(5), R.always('#a7a7a7')],
+  // [R.equals(1), R.always('#929eff')],
+  // [R.equals(2), R.always('#88ffc9')],
+  // [R.equals(3), R.always('#cb59ff')],
+  // [R.equals(4), R.always('#ff6f7c')],
+  // [R.equals(5), R.always('#a7a7a7')],
+  [R.equals(1), R.always('cornflowerblue')],
+  [R.equals(2), R.always('greenyellow')],
+  [R.equals(3), R.always('fuchsia')],
+  [R.equals(4), R.always('hotpink')],
+  [R.equals(5), R.always('gainsboro')],
   [R.T,         temp => { throw new Error(`Unknown tone: ${temp.toString()}`) }]
 ])
 
@@ -78,12 +128,44 @@ const colorizeHanzi = x => {
   const dict_hanzi = dict_hanzis[0]
   const tone = parseInt(R.last(dict_hanzi.pinyin), 10)
   const toneColor = getTone(tone)
-  return `<c c="${toneColor}">${x}</c>`
+  return `<font color="${toneColor}">${x}</font>`
 }
 
 const colorizeHanzi__in_text = x => [...x].map(colorizeHanzi).join('')
 
+const escapeHTML = str => str.replace(/[&<>'"]/g,
+  tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag]))
+
+function colorPinyin(pinyin) {
+  // return pinyin.split(' ').map(pinyinEl => {
+  const includeNonPinyin = true
+  return require('pinyin-split').split(pinyin, includeNonPinyin).map(pinyinEl => {
+    const tone = require('pinyin-utils').getToneNumber(pinyinEl)
+    if (tone === undefined) { throw new Error(`${pinyinEl}`) }
+    if (tone === 5) { return pinyinEl }
+    const toneColor = getTone(tone)
+    return `<font color="${toneColor}">${escapeHTML(pinyinEl)}</font>`
+    // if (htmlAndNotXdxl) { return `<font color="${toneColor}">${escapeHTML(pinyinEl)}</font>` }
+    // return `<c c="${toneColor}">${escapeHTML(pinyinEl)}</c>`
+  // }).join(' ')
+  }).join('')
+}
+
+// colorPinyin("er4 shi2 yi1 san1 ti3 zong1 he2 zheng4")
+// colorPinyin("er4r shi2r yi1r san1r ti3r zong1r he2r zheng4r")
+// colorPinyin("er4shi2yi1san1ti3zong1he2zheng4")
+// colorPinyin("er4rshi2ryi1rsan1rti3rzong1rhe2rzheng4r")
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const srghma_chinese_stardict_textual__text = ruPinyinArray_.map(({ text, hanzi }) => {
+  // -> or <link>
   if (/[^k-]>/g.test(text)) { throw new Error(text) }
   if (text.includes('&')) { throw new Error(text) }
   // text = text.replace(/&lt;link&gt;([^&]*)&lt;\/link&gt;/g, '<b>$1</b>')
@@ -93,6 +175,7 @@ const srghma_chinese_stardict_textual__text = ruPinyinArray_.map(({ text, hanzi 
   // text = text.replace(/\</g,'&lt;')
 
   text = text.replace(/<link>([^<]*)<\/link>/g, '<b>$1</b>')
+
   text = text.replace(/-\>/g,'&gt;')
   // source code &lt; will display < on screen
   // source code &gt; will display > on screen
@@ -107,8 +190,8 @@ const srghma_chinese_stardict_textual__text = ruPinyinArray_.map(({ text, hanzi 
   // https://github.com/huzheng001/stardict-3/blob/master/dict/doc/TextualDictionaryFileFormat
   // https://github.com/huzheng001/stardict-3/blob/master/dict/doc/StarDictFileFormat
   // https://github.com/huzheng001/stardict-3/blob/master/dict/doc/stardict-textual-dict-example.xml
-  const value = colorizeHanzi__in_text(text.replace(/\n/g, '<br/>'))
-  return `<article>${[hanzi_1_, ...hanzi_other_].join("\n")}<definition type="x"><![CDATA[${value}]]></definition></article>`
+  const value = colorPinyin(colorizeHanzi__in_text(text.replace(/\n/g, '<br/>')))
+  return `<article>${[hanzi_1_, ...hanzi_other_].join("\n")}<definition type="h"><![CDATA[${value}]]></definition></article>`
 }).join('\n\n')
 
 // [--direct|--indirect|--sqlite] [--no-alts]
@@ -118,7 +201,7 @@ const srghma_chinese_stardict_textual__text = ruPinyinArray_.map(({ text, hanzi 
 // [--source-lang=LANGUAGE] [--target-lang=LANGUAGE]
 // ['--name=GLOSSARY NAME']
 
-require('fs').writeFileSync(`/tmp/srghma-chinese-stardict-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
+fs.writeFileSync(`/tmp/srghma-chinese-stardict-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
 <stardict>
 <info>
   <version>3.0.0</version>
@@ -142,12 +225,10 @@ const mkAard = (input, output) => require("child_process").execSync(`export INPU
 mkStardict("/tmp/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict/")
 // mkAard("/tmp/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-stardict.slob")
 
-const ankiJson = JSON.parse(require('fs').readFileSync('./files/anki.json').toString()); null
-// const ankiJson = {}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// R.toPairs(ankiJson).map(([key, value]) => {
-// })
-
+/// const ankiJson = JSON.parse(fs.readFileSync('./files/anki.json').toString()); null
+const ankiJson = {}
 
 const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_hsk, purpleculture_info, purpleculture_tree, charactersWithComponent, charactersWithComponent_hanziyuan }]) => {
   // if (key !== '着') { return }
@@ -170,7 +251,8 @@ const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_h
 
   // WHF!!! bc of &??
   // const linkTranchinese = x => `<iref href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}&tcLanguage=ru">${x}</iref>`
-  const linkTranchinese = x => `<iref href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}">${x}</iref>`
+  // const linkTranchinese = x => `<iref href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}">${x}</iref>`
+  const linkTranchinese = x => `<a href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}">${x}</a>`
 
   let value = [
     purpleculture_info                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_info)}` : '',
@@ -179,12 +261,12 @@ const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_h
     charactersWithComponent           ? `charactersWithComponent: ${charactersWithComponent.map(colorizeHanzi).join(", ")}` : '',
     charactersWithComponent_hanziyuan ? `charactersWithComponent_hanziyuan: ${charactersWithComponent_hanziyuan.map(colorizeHanzi).join(", ")}` : '',
     `tranchinese: ${linkTranchinese(`${key}*`)}, ${linkTranchinese(`*${key}`)}`
-  ].filter(x => x).join('<br/>')
+  ].filter(x => x).map(x => `<p>${x}</p>`).join('')
   // console.log(value)
-  return `<article><key>${key}</key><definition type="x"><![CDATA[${value}]]></definition></article>`
+  return `<article><key>${key}</key><definition type="h"><![CDATA[${value}]]></definition></article>`
 }).join('\n\n')
 
-require('fs').writeFileSync(`/tmp/purpleculture-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
+fs.writeFileSync(`/tmp/purpleculture-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
 <stardict>
 <info>
   <version>3.0.0</version>
@@ -201,104 +283,29 @@ ${dict_output_text_purple}
 </contents>
 </stardict>`)
 
-mkStardict("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture/")
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// mkStardict("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture/")
 // mkAard("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture.slob")
 
 const trainchinese_with_cache_path = '/home/srghma/projects/anki-cards-from-pdf/trainchinese_cache.json'
 let trainchinese_cache = {}
 if (fs.existsSync(trainchinese_with_cache_path)) { trainchinese_cache = JSON.parse(fs.readFileSync(trainchinese_with_cache_path).toString()) }; null
 
-let trainchinese_cache_ = Object.values(trainchinese_cache).flat().filter(R.identity)
-trainchinese_cache_ = R.uniqBy(x => [x.ch, x.pinyin, x.transl, x.type].join(''), trainchinese_cache_)
+let trainchinese_cache_ = null
+trainchinese_cache_ = Object.values(trainchinese_cache).flat().filter(R.identity)
+trainchinese_cache_ = trainchinese_cache_.filter(x => x.type !== 'фраза')
+trainchinese_cache_ = trainchinese_cache_.filter(x => x.type !== 'идиома')
+trainchinese_cache_ = R.uniqBy(x => [x.ch.trim(), x.pinyin.trim(), x.transl.trim(), x.type.trim()].join(''), trainchinese_cache_)
+trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_numbered: convertPinyin__marked_to_numbered(x.pinyin) }))
+trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_colored_html: colorPinyin(x.pinyin, true) }))
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const alltrainchinese__hierogliphs = R.uniq([...trainchinese_cache_.map(x => x.ch).join('')]).filter(isHanzi)
 
-// function joinHanziAndTones(hanzi, pinyin) {
-//   let hanziArray = [...hanzi]
-//   // hanziArray = hanziArray.join('|')
-//   // hanziArray = hanziArray.replace(/([妞那点事会味])\|儿/g, '$1儿')
-//   // hanziArray = hanziArray.split('|')
-
-//   const pinyinArray = pinyin.replace(/[\.,\!\-\?]/g, ' ').split(' ').map(x => x.trim()).filter(x => x)
-
-//   return pinyinArray.map(pinyin => {
-//     const tone = require('pinyin-utils').getToneNumber(pinyin)
-//     if (tone === undefined) { throw new Error(`${pinyin}`) }
-//     const toneColor = getTone(tone)
-//     const erization = pinyin.endsWith('r')
-//     let hanziInput = null
-//     if (erization) {
-//       const [hanziArray_1, hanziArray_2, ...hanziArray_other] = hanziArray
-//       const [hanziArray_other__notHanzi, hanziArray_other__other] = R.splitWhen(isHanzi, hanziArray_other)
-//       if (!isHanzi(hanziArray_1)) { throw new Error(`hanziArray_1 ${hanziArray_1}`) }
-//       if (!isHanzi(hanziArray_2)) { throw new Error(`hanziArray_2 ${hanziArray_2}`) }
-//       hanziInput = `<c c="${toneColor}">${hanziArray_1}${hanziArray_2}</c>${hanziArray_other__notHanzi}`
-//       hanziArray = hanziArray_other__other
-//     } else {
-//       const [hanziArray_1, ...hanziArray_other] = hanziArray
-//       const [hanziArray_other__notHanzi, hanziArray_other__other] = R.splitWhen(isHanzi, hanziArray_other)
-//       hanziInput = `<c c="${toneColor}">${hanziArray_1}</c>${hanziArray_other__notHanzi}`
-//       hanziArray = hanziArray_other__other
-//     }
-//     return hanziInput
-//   }).join('')
-
-//   if (hanziArray.length !== 0) { throw new Error(`${hanzi} ${pinyin} ${tonesArray__buffer}`) }
-
-//   // const tonesArray__initial = pinyinArray.map(require('pinyin-utils').getToneNumber)
-
-//   // // if (hanziArray.filter(isHanzi).length !== tonesArray.length) { throw new Error(`${hanziArray.toString()} !== ${tonesArray.toString()}`) }
-//   // let tonesArray__buffer = tonesArray__initial
-//   // const output = hanziArray.map(hanzi => {
-//   //   if (isHanzi(hanzi[0])) {
-//   //     // if (hanzi === '儿') { return '儿' }
-//   //     const [tone, ...other_tonesArray] = tonesArray__buffer
-//   //     if (tone === undefined) { throw new Error(`${hanziArray} ${pinyin} ${tonesArray__initial}`) }
-//   //     tonesArray__buffer = other_tonesArray
-//   //     // try {
-//   //       const toneColor = getTone(tone)
-//   //       return `<c c="${toneColor}">${hanzi}</c>`
-//   //     // } catch (e) {
-//   //     //   console.error(e)
-//   //     //   throw e
-//   //     // }
-//   //   } else {
-//   //     return hanzi
-//   //   }
-//   // })
-//   // if (tonesArray__buffer.length !== 0) { throw new Error(`${hanzi} ${pinyin} ${tonesArray__buffer}`) }
-//   // return output.join('')
-// }
-
-// joinHanziAndTones('这个灯泡太亮了，有点刺眼。', 'zhè gè dēng pào tài liàng le, yóu diǎn cì yǎn .')
-// joinHanziAndTones('看！来了一个漂亮妞儿。', 'kàn ! lái le yí ge piào liang niūr .')
-
-// trainchinese_cache_ = trainchinese_cache_.map(({ ch, pinyin, transl, type }) => {
-//   try {
-//     const rendered = joinHanziAndTones(ch, pinyin)
-//     return { ch, pinyin, transl, type, rendered }
-//   } catch (e) {
-//     console.log({ ch, pinyin })
-//     // throw e
-//   }
-// })
-
-// trainchinese_cache_ = trainchinese_cache_.map(({ ch, pinyin, transl, type }) => {
-//   return { ch, rendered: `${ch} | ${type} | ${pinyin} | ${transl}` }
-// })
-
-const trainchinese_textual__writer = require('fs').createWriteStream(`/tmp/trainchinese-textual.xml`)
-
+const trainchinese_textual__writer = fs.createWriteStream(`/tmp/trainchinese-textual.xml`)
 trainchinese_textual__writer.on('error', err => console.error(err))
-
-async function writeWithAwait(writable, chunk) {
-  const { once } = require('events')
-  if (!writable.write(chunk)) { // (B)
-    // Handle backpressure
-    await once(writable, 'drain');
-  }
-}
-
 trainchinese_textual__writer.on('open', async function() {
   await writeWithAwait(trainchinese_textual__writer, `<?xml version="1.0" encoding="UTF-8" ?>
   <stardict>
@@ -322,7 +329,7 @@ trainchinese_textual__writer.on('open', async function() {
       const [matches, doesntmatch] = R.partition(s => (new RegExp(r)).test(s.ch), trainchinese_cache_current)
       trainchinese_cache_current = doesntmatch
       // return matches
-      return R.sortBy(x => x.pinyin, matches)
+      return R.sortBy(x => x.pinyin_numbered, matches)
     }
 
     let value = {
@@ -334,35 +341,18 @@ trainchinese_textual__writer.on('open', async function() {
       '..x':   get(`^..${key}$`),
       // 'x*':    get(`^${key}`),
       // '*x':    get(`${key}$`),
-      // 'other': get(`.`),
+      'other': get(`.`),
     }
 
     value = R.toPairs(value).filter(([k, v]) => v.length > 0)
 
-    const escapeHTML = str => str.replace(/[&<>'"]/g,
-      tag => ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          "'": '&#39;',
-          '"': '&quot;'
-        }[tag]));
-
     value = value.map(([k, v]) => {
-      const print = withCh => ({ ch, pinyin, transl, type }) => {
-        pinyin = pinyin.split(' ').map(pinyinEl => {
-          const tone = require('pinyin-utils').getToneNumber(pinyinEl)
-          if (tone === undefined) { throw new Error(`${pinyinEl}`) }
-          if (tone === 5) { return pinyinEl }
-          const toneColor = getTone(tone)
-          return `<c c="${toneColor}">${pinyinEl}</c>`
-        }).join(' ')
-
+      const print = withCh => ({ ch, pinyin_colored_html, transl, type }) => {
         return [
-          withCh ? escapeHTML(ch) : null,
-          ` <pos>${escapeHTML(type)}</pos>`,
-          ` ${pinyin}`,
-          `${escapeHTML(transl)}`,
+          withCh ? `<deftext>${escapeHTML(ch)}</deftext>` : null,
+          `<pos>${escapeHTML(type)}</pos>`,
+          `<deftext>${pinyin_colored_html}</deftext>`,
+          `<deftext>${escapeHTML(transl)}</deftext>`,
         ].filter(x => x).join(escapeHTML(' | '))
       }
 
@@ -379,19 +369,115 @@ trainchinese_textual__writer.on('open', async function() {
   }
 
   await writeWithAwait(trainchinese_textual__writer, `</contents></stardict>`)
-  // trainchinese_textual__writer.on("end", () => {
-  // })
   trainchinese_textual__writer.end()
-  const { finished } = require('node:stream');
-  finished(trainchinese_textual__writer, err => {
-    if (err) {
-      console.error('Stream failed.', err);
-    } else {
-      console.log('Stream is done reading.');
-      mkStardict("/tmp/trainchinese-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/trainchinese/")
-    }
-  })
+  const maybeFinishError = await finishedAwait(trainchinese_textual__writer)
+  if (maybeFinishError) {
+    console.error('Stream failed.', maybeFinishError)
+    return
+  }
+  console.log('Stream is finished.');
+
+  mkStardict("/tmp/trainchinese-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/trainchinese/")
 })
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// trainchinese_cache_ = R.sortBy(x => x.ch.length).reverse()
+
+// types_that_should_not_be_included = ['фраза', 'идиома']
+
+let trainchinese_cache__ = trainchinese_cache_
+// trainchinese_cache__ = trainchinese_cache__.filter(x => x.type !== 'фраза')
+// trainchinese_cache__ = trainchinese_cache__.filter(x => x.type !== 'идиома')
+
+// trainchinese_cache_ = trainchinese_cache_.filter(x => x.ch.length > 5)
+// trainchinese_cache_ = R.groupBy(x => x.type, trainchinese_cache_)
+// Object.keys(trainchinese_cache_)
+
+function rutranslation_splitOnWords(text) {
+  text = text.toLowerCase()
+  text = [...text].filter(x => !isHanzi(x)).join('')
+  text = text.replace(/^\([^\)]+\)/g, ', ')
+  text = text.replace(/([,;]\s*)\([^\)]+\)/g, '$1')
+  text = text.replace(/\([^\)]+\)$/g, ',')
+  text = text.replace(/\([^\)]+\)([,;])/g, '$1')
+  text = text.replace(/ и /g, ',')
+  text = text.replace(/\(обр\.\)/g, ',')
+  text = text.replace(/так([^,]*), как/g, 'так$1 как')
+  text = text.split(/[,;\.:\s\"]/g)
+  text = text.map(x => x.trim()).filter(x => x).filter(x => !x.startsWith('см.'))
+  return text
+}
+rutranslation_splitOnWords('привлекающий внимание, яркий и живой; ясноглазый (исп. невидящим человеком по отношению к людям, которые могут видеть); (обр.) способный замечать или видеть вещи такими, какие они есть')
+rutranslation_splitOnWords('(о голосе) звонкий, светить(ся)')
+
+trainchinese_cache__ = trainchinese_cache__.map(x => ({ ...x, transl__splitted: rutranslation_splitOnWords(x.transl) }))
+trainchinese_cache__ = trainchinese_cache__.map(x => x.transl__splitted.map(search_word => ({ ...x, search_word }))).flat()
+trainchinese_cache__ = R.groupBy(x => x.search_word, trainchinese_cache__)
+
+const trainchinese_ru_textual__writer = fs.createWriteStream(`/tmp/trainchinese_ru-textual.xml`)
+trainchinese_ru_textual__writer.on('error', err => console.error(err))
+trainchinese_ru_textual__writer.on('open', async function() {
+  await writeWithAwait(trainchinese_ru_textual__writer, `<?xml version="1.0" encoding="UTF-8" ?>
+  <stardict>
+  <info>
+    <version>3.0.0</version>
+    <bookname>srghma trainchinese ru</bookname>
+    <author>Serhii Khoma</author>
+    <email>srghma@gmail.com</email>
+    <website>srghma-chinese.github.io</website>
+    <description>MIT copyright</description>
+    <date>${new Date()}</date>
+    <dicttype><!-- this element is normally empty --></dicttype>
+  </info>
+  <contents>`)
+
+  // console.log(alltrainchinese__hierogliphs.slice(0, 4))
+  for await (let [key, chWords] of R.toPairs(trainchinese_cache__)) {
+    // console.log(key)
+    chWords = R.groupBy(x => [...x.ch].length, chWords)
+    chWords = R.values(chWords)
+    chWords = chWords.map(R.sortBy(x => x.pinyin_numbered)).flat()
+
+    chWords = chWords.map(({ ch, pinyin_colored_html, transl, type }) => {
+      return [
+        `<span>${escapeHTML(ch)}</span>`,
+        `<font color="green">${escapeHTML(type)}</font>`,
+        `<span>${pinyin_colored_html}</span>`,
+        `<span>${escapeHTML(transl)}</span>`,
+      ].filter(x => x).join(escapeHTML(' | '))
+    }).flat().filter(x => x).map(x => `<p>${x}</p>`).join('\n')
+    // console.log(value)
+
+    await writeWithAwait(trainchinese_ru_textual__writer, `<article><key>${key}</key><definition type="h"><![CDATA[${chWords}]]></definition></article>\n\n`)
+  }
+
+  await writeWithAwait(trainchinese_ru_textual__writer, `</contents></stardict>`)
+  trainchinese_ru_textual__writer.end()
+  const maybeFinishError = await finishedAwait(trainchinese_ru_textual__writer)
+  if (maybeFinishError) {
+    console.error('Stream failed.', maybeFinishError)
+    return
+  }
+  console.log('Stream is finished.');
+
+  mkStardict("/tmp/trainchinese_ru-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/trainchinese_ru/")
+})
+
+///////////////////////////////////////////////////////
+
+// export INPUT="/home/srghma/Downloads/cedict_1_0_ts_utf-8_mdbg/cedict_ts.u8" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml" && rm -rfd "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=CC-CEDICT --write-format=StardictTextual'
+// sd -s '; padding: 5px' '; padding: 1px' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+
+// sd -s 'font color="red"'    'font color="#929eff"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+// sd -s 'font color="orange"' 'font color="#88ffc9"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+// sd -s 'font color="green"'  'font color="#cb59ff"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+// sd -s 'font color="blue"'   'font color="#ff6f7c"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+// sd -s 'font color="black"'  'font color="#a7a7a7"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+
+// export INPUT="/home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/cc-cedict/" && rm -rfd "$OUTPUT" && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'
+
+///////////////////////////////////////////////////////
 
 // // https://www.plecoforums.com/threads/hainanese-resources-for-pleco.5825/#post-51457
 // // https://www.plecoforums.com/threads/user-dictionaries-creation-import-file-format-etc.6934/#post-51042
@@ -399,8 +485,8 @@ trainchinese_textual__writer.on('open', async function() {
 // R.toPairs(ruPinyinObjectCache).map(([key, value]) => { if (value.includes('\t')) { throw new Error } })
 // const output = R.toPairs(ruPinyinObjectCache).map(([key, value]) => `${key}<tab><tab>${value.replace(/\n/g, '')}`).join('\n')
 // console.log('done')
-// require('fs').writeFileSync(`/home/srghma/pleco-user-dict.tsv`, output)
-// require('fs').writeFileSync(`/home/srghma/pleco-user-dict.tsv`, output)
+// fs.writeFileSync(`/home/srghma/pleco-user-dict.tsv`, output)
+// fs.writeFileSync(`/home/srghma/pleco-user-dict.tsv`, output)
 
 // const text = `#NAME "mychinese"
 // #INDEX_LANGUAGE "Chinese"
@@ -409,6 +495,6 @@ trainchinese_textual__writer.on('open', async function() {
 // ${R.toPairs(ruPinyinObjectCache).map(([key, value]) => `${key}\n${value.split(/\n/g).map(x => `  [m1]${x}[/m]`).join('\n')}`).join('\n\n')}`
 // const utf16buffer = Buffer.from(`\ufeff${text}`, 'utf16le');
 
-// require('fs').writeFileSync(`/home/srghma/Desktop/mychinese/mychinese.dsl`, utf16buffer)
-// // require('fs').writeFileSync(`/home/srghma/Dropbox/mychinese.dsl`, utf16buffer)
+// fs.writeFileSync(`/home/srghma/Desktop/mychinese/mychinese.dsl`, utf16buffer)
+// // fs.writeFileSync(`/home/srghma/Dropbox/mychinese.dsl`, utf16buffer)
 // // rclone copy /home/srghma/Desktop/mychinese/mychinese.dsl gdrive:mychinese.dsl
