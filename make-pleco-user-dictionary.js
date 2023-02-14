@@ -60,49 +60,6 @@ function finishedAwait(stream) {
   })
 }
 
-///////////////////////////////////////////
-
-const removeLinks = x => x.replace(/<link>[^<]*<\/link>/g, '')
-
-function ruPinyinTextToArray(text) {
-  text = text.replace(/\t/g, '').split(/―{4,}|-{4,}/)
-  text = text.map(x => x.split('\n').map(x => x.trim()).join('\n'))
-  text = text.map(x => x.split(/_{3,}/).map(x => x.trim()).filter(x => x).join(`\n\n______________\n\n`))
-  text = text.filter(x => x.length > 0)
-  text = text.map(x => x.replace(/^([\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d][\u3040-\u309f]|[\u30a0-\u30ff]|[\u4e00-\u9faf]|[\u3400-\u4dbf])([\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d][\u3040-\u309f]|[\u30a0-\u30ff]|[\u4e00-\u9faf]|[\u3400-\u4dbf])/g, '$1 $2'))
-  // text = text.map(colorPinyin)
-  return text
-}
-
-function getDuplicatedItems(someArray) {
-  // check for misuse if desired
-  // if (!Array.isArray(someArray)) {
-  //     throw new TypeError(`getDuplicatedItems requires an Array type, received ${typeof someArray} type.`);
-  // }
-  const itemSet = new Set(someArray);
-  const duplicatedItems = [...itemSet].filter(
-      (item) => someArray.indexOf(item) !== someArray.lastIndexOf(item)
-  );
-  return duplicatedItems;
-}
-
-function throwIfDuplicate(ruPinyinArray) {
-  const duplicated = getDuplicatedItems(ruPinyinArray.map(x => x.hanzi).flat())
-  if (duplicated.length === 0) { return }
-  throw new Error(duplicated.join(','))
-}
-
-const dbPath = `/home/srghma/projects/srghma-chinese/ru-pinyin.txt`
-const ruPinyinArray = ruPinyinTextToArray(fs.readFileSync(dbPath).toString())
-// const ruPinyinArray = []
-fs.writeFileSync(dbPath, ruPinyinArray.join(`\n\n------------\n\n`))
-let ruPinyinArray_ = ruPinyinArray.map(text => ({ text, hanzi: R.uniq([...(removeLinks(text))].filter(isHanzi)) }))
-// ruPinyinArray_ = ruPinyinArray_.slice(825, 830)
-throwIfDuplicate(ruPinyinArray_)
-
-// NOTE: <to reach> will throw error
-// lxml.etree.XMLSyntaxError: Specification mandates value for attribute reach
-
 const getTone = R.cond([
   // [R.equals(1), R.always('blue')],
   // [R.equals(2), R.always('green')],
@@ -115,9 +72,9 @@ const getTone = R.cond([
   // [R.equals(4), R.always('#ff6f7c')],
   // [R.equals(5), R.always('#a7a7a7')],
   [R.equals(1), R.always('cornflowerblue')],
-  [R.equals(2), R.always('greenyellow')],
-  [R.equals(3), R.always('fuchsia')],
-  [R.equals(4), R.always('hotpink')],
+  [R.equals(2), R.always('springgreen')],
+  [R.equals(3), R.always('violet')],
+  [R.equals(4), R.always('tomato')],
   [R.equals(5), R.always('gainsboro')],
   [R.T,         temp => { throw new Error(`Unknown tone: ${temp.toString()}`) }]
 ])
@@ -142,25 +99,94 @@ const escapeHTML = str => str.replace(/[&<>'"]/g,
       '"': '&quot;'
     }[tag]))
 
-function colorPinyin(pinyin) {
-  // return pinyin.split(' ').map(pinyinEl => {
-  const includeNonPinyin = true
-  return require('pinyin-split').split(pinyin, includeNonPinyin).map(pinyinEl => {
-    const tone = require('pinyin-utils').getToneNumber(pinyinEl)
-    if (tone === undefined) { throw new Error(`${pinyinEl}`) }
-    if (tone === 5) { return pinyinEl }
-    const toneColor = getTone(tone)
-    return `<font color="${toneColor}">${escapeHTML(pinyinEl)}</font>`
-    // if (htmlAndNotXdxl) { return `<font color="${toneColor}">${escapeHTML(pinyinEl)}</font>` }
-    // return `<c c="${toneColor}">${escapeHTML(pinyinEl)}</c>`
-  // }).join(' ')
-  }).join('')
+const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1)
+let pinyin = null
+pinyin = require('/home/srghma/projects/anki-cards-from-pdf/pinyin-to-ru-by-kfcd.json')
+pinyin = pinyin.map(([pinyin_numbered, pinyin_with_tone]) => ({ n: Number(pinyin_numbered.at(-1)), v: [pinyin_numbered, pinyin_with_tone] }))
+pinyin = pinyin.filter(({ n, v }) => n !== 5)
+pinyin = pinyin.map(({ n, v }) => v.map(v => ({ n, v }))).flat()
+pinyin = pinyin.map(({ n, v }) => [v, `${v}r`].map(v => ({ n, v }))).flat()
+pinyin = pinyin.map(({ n, v }) => [v, capitalize(v)].map(v => ({ n, v }))).flat()
+pinyin = R.sortBy(({ n, v }) => v.length, pinyin).reverse()
+pinyin = R.groupBy(({ n, v }) => n, pinyin)
+pinyin = R.map(vs => `(${vs.map(x => x.v).join('|')})`, pinyin)
+pinyin = R.toPairs(pinyin)
+// pinyin = R.over(R.lensIndex(0), x => Number(x), pinyin)
+pinyin = pinyin.map(([n, r]) => [Number(n), r])
+pinyin = pinyin.map(([n, r]) => [getTone(n), r])
+// pinyin = pinyin.map(({ n, v }) => ({ n, v, toneColor: getTone(n) }))
+// console.log(util.inspect(pinyin, { maxArrayLength: Infinity, showHidden: false, depth: null, colors: true }))
+
+function colorPinyin(text) {
+  pinyin.forEach(([toneColor, r]) => {
+    text = text.replace(new RegExp(r, 'g'), `<font color="${toneColor}">$1</font>`)
+  })
+  return text
 }
 
-// colorPinyin("er4 shi2 yi1 san1 ti3 zong1 he2 zheng4")
-// colorPinyin("er4r shi2r yi1r san1r ti3r zong1r he2r zheng4r")
-// colorPinyin("er4shi2yi1san1ti3zong1he2zheng4")
-// colorPinyin("er4rshi2ryi1rsan1rti3rzong1rhe2rzheng4r")
+colorPinyin("er4 shi2 yi1 san1 ti3 zong1 he2 zheng4")
+colorPinyin("er4r shi2r yi1r san1r ti3r zong1r he2r zheng4r")
+colorPinyin("er4shi2yi1san1ti3zong1he2zheng4")
+colorPinyin("er4rshi2ryi1rsan1rti3rzong1rhe2rzheng4r")
+
+// function colorPinyin(pinyin) {
+//   // return pinyin.split(' ').map(pinyinEl => {
+//   const includeNonPinyin = true
+//   return require('pinyin-split').split(pinyin, includeNonPinyin).map(pinyinEl => {
+//     const tone = require('pinyin-utils').getToneNumber(pinyinEl)
+//     if (tone === undefined) { throw new Error(`${pinyinEl}`) }
+//     if (tone === 5) { return pinyinEl }
+//     const toneColor = getTone(tone)
+//     return `<font color="${toneColor}">${escapeHTML(pinyinEl)}</font>`
+//     // if (htmlAndNotXdxl) { return `<font color="${toneColor}">${escapeHTML(pinyinEl)}</font>` }
+//     // return `<c c="${toneColor}">${escapeHTML(pinyinEl)}</c>`
+//   // }).join(' ')
+//   }).join('')
+// }
+
+///////////////////////////////////////////
+
+const removeLinks = x => x.replace(/<link>[^<]*<\/link>/g, '')
+
+function ruPinyinTextToArray(text) {
+  text = text.replace(/\t/g, '').split(/―{4,}|-{4,}/)
+  text = text.map(x => x.split('\n').map(x => x.trim()).join('\n'))
+  text = text.map(x => x.split(/_{3,}/).map(x => x.trim()).filter(x => x).join(`\n\n______________\n\n`))
+  text = text.filter(x => x.length > 0)
+  text = text.map(x => x.replace(/^([\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d][\u3040-\u309f]|[\u30a0-\u30ff]|[\u4e00-\u9faf]|[\u3400-\u4dbf])([\u4E00-\u9FCC\u3400-\u4DB5\uFA0E\uFA0F\uFA11\uFA13\uFA14\uFA1F\uFA21\uFA23\uFA24\uFA27-\uFA29]|[\ud840-\ud868][\udc00-\udfff]|\ud869[\udc00-\uded6\udf00-\udfff]|[\ud86a-\ud86c][\udc00-\udfff]|\ud86d[\udc00-\udf34\udf40-\udfff]|\ud86e[\udc00-\udc1d][\u3040-\u309f]|[\u30a0-\u30ff]|[\u4e00-\u9faf]|[\u3400-\u4dbf])/g, '$1 $2'))
+  return text
+}
+
+function getDuplicatedItems(someArray) {
+  // check for misuse if desired
+  // if (!Array.isArray(someArray)) {
+  //     throw new TypeError(`getDuplicatedItems requires an Array type, received ${typeof someArray} type.`);
+  // }
+  const itemSet = new Set(someArray);
+  const duplicatedItems = [...itemSet].filter(
+      (item) => someArray.indexOf(item) !== someArray.lastIndexOf(item)
+  );
+  return duplicatedItems;
+}
+
+function throwIfDuplicate(ruPinyinArray) {
+  const duplicated = getDuplicatedItems(ruPinyinArray.map(x => x.hanzi).flat())
+  if (duplicated.length === 0) { return }
+  throw new Error(duplicated.join(','))
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const dbPath = `/home/srghma/projects/srghma-chinese/ru-pinyin.txt`
+const ruPinyinArray = ruPinyinTextToArray(fs.readFileSync(dbPath).toString())
+// const ruPinyinArray = []
+fs.writeFileSync(dbPath, ruPinyinArray.join(`\n\n------------\n\n`))
+let ruPinyinArray_ = ruPinyinArray.map(text => ({ text, hanzi: R.uniq([...(removeLinks(text))].filter(isHanzi)) }))
+// ruPinyinArray_ = ruPinyinArray_.slice(825, 830)
+throwIfDuplicate(ruPinyinArray_)
+
+// NOTE: <to reach> will throw error
+// lxml.etree.XMLSyntaxError: Specification mandates value for attribute reach
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -227,8 +253,8 @@ mkStardict("/tmp/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dic
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// const ankiJson = JSON.parse(fs.readFileSync('./files/anki.json').toString()); null
-const ankiJson = {}
+const ankiJson = JSON.parse(fs.readFileSync('./files/anki.json').toString()); null
+// const ankiJson = {}
 
 const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_hsk, purpleculture_info, purpleculture_tree, charactersWithComponent, charactersWithComponent_hanziyuan }]) => {
   // if (key !== '着') { return }
@@ -283,10 +309,11 @@ ${dict_output_text_purple}
 </contents>
 </stardict>`)
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// mkStardict("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture/")
+mkStardict("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture/")
 // mkAard("/tmp/purpleculture-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/purpleculture.slob")
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const trainchinese_with_cache_path = '/home/srghma/projects/anki-cards-from-pdf/trainchinese_cache.json'
 let trainchinese_cache = {}
@@ -298,7 +325,7 @@ trainchinese_cache_ = trainchinese_cache_.filter(x => x.type !== 'фраза')
 trainchinese_cache_ = trainchinese_cache_.filter(x => x.type !== 'идиома')
 trainchinese_cache_ = R.uniqBy(x => [x.ch.trim(), x.pinyin.trim(), x.transl.trim(), x.type.trim()].join(''), trainchinese_cache_)
 trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_numbered: convertPinyin__marked_to_numbered(x.pinyin) }))
-trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_colored_html: colorPinyin(x.pinyin, true) }))
+trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_colored_html: colorPinyin(x.pinyin) }))
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -339,7 +366,7 @@ trainchinese_textual__writer.on('open', async function() {
       'x..':   get(`^${key}..$`),
       '.x.':   get(`^.${key}.$`),
       '..x':   get(`^..${key}$`),
-      // 'x*':    get(`^${key}`),
+      'x*':    get(`^${key}`),
       // '*x':    get(`${key}$`),
       'other': get(`.`),
     }
@@ -349,22 +376,22 @@ trainchinese_textual__writer.on('open', async function() {
     value = value.map(([k, v]) => {
       const print = withCh => ({ ch, pinyin_colored_html, transl, type }) => {
         return [
-          withCh ? `<deftext>${escapeHTML(ch)}</deftext>` : null,
-          `<pos>${escapeHTML(type)}</pos>`,
-          `<deftext>${pinyin_colored_html}</deftext>`,
-          `<deftext>${escapeHTML(transl)}</deftext>`,
+          withCh ? colorizeHanzi__in_text(ch) : null,
+          `<font color="green">${escapeHTML(type)}</font>`,
+          pinyin_colored_html,
+          escapeHTML(transl),
         ].filter(x => x).join(escapeHTML(' | '))
       }
 
       return [
-        k.trim() ? k : null,
+        k.trim() ? `<br/><big>${k}</big><br/>` : null,
         ...(v.map(print(!!k.trim())))
       ]
     }).flat().filter(x => x).join('<br/>')
     // console.log(value)
 
     if (value.length > 0) {
-      await writeWithAwait(trainchinese_textual__writer, `<article><key>${key}</key><definition type="x"><![CDATA[${value}]]></definition></article>\n\n`)
+      await writeWithAwait(trainchinese_textual__writer, `<article><key>${key}</key><definition type="h"><![CDATA[${value}]]></definition></article>\n\n`)
     }
   }
 
@@ -441,12 +468,12 @@ trainchinese_ru_textual__writer.on('open', async function() {
 
     chWords = chWords.map(({ ch, pinyin_colored_html, transl, type }) => {
       return [
-        `<span>${escapeHTML(ch)}</span>`,
+        colorizeHanzi__in_text(ch),
         `<font color="green">${escapeHTML(type)}</font>`,
-        `<span>${pinyin_colored_html}</span>`,
-        `<span>${escapeHTML(transl)}</span>`,
+        pinyin_colored_html,
+        escapeHTML(transl),
       ].filter(x => x).join(escapeHTML(' | '))
-    }).flat().filter(x => x).map(x => `<p>${x}</p>`).join('\n')
+    }).flat().filter(x => x).join('<br/>')
     // console.log(value)
 
     await writeWithAwait(trainchinese_ru_textual__writer, `<article><key>${key}</key><definition type="h"><![CDATA[${chWords}]]></definition></article>\n\n`)
@@ -466,16 +493,32 @@ trainchinese_ru_textual__writer.on('open', async function() {
 
 ///////////////////////////////////////////////////////
 
-// export INPUT="/home/srghma/Downloads/cedict_1_0_ts_utf-8_mdbg/cedict_ts.u8" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml" && rm -rfd "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=CC-CEDICT --write-format=StardictTextual'
-// sd -s '; padding: 5px' '; padding: 1px' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+const mkCCCEDICTToTextual = (input, output) => require("child_process").execSync(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rf "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=CC-CEDICT --write-format=StardictTextual'`)
 
-// sd -s 'font color="red"'    'font color="#929eff"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
-// sd -s 'font color="orange"' 'font color="#88ffc9"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
-// sd -s 'font color="green"'  'font color="#cb59ff"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
-// sd -s 'font color="blue"'   'font color="#ff6f7c"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
-// sd -s 'font color="black"'  'font color="#a7a7a7"' /home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml
+mkCCCEDICTToTextual("/home/srghma/Downloads/cedict_1_0_ts_utf-8_mdbg/cedict_ts.u8", "/tmp/cc-cedict-textual.xml")
 
-// export INPUT="/home/srghma/Desktop/dictionaries/mychinese/cc-cedict-textual.xml" && export OUTPUT="/home/srghma/Desktop/dictionaries/mychinese/cc-cedict/" && rm -rfd "$OUTPUT" && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'
+let cccedicttextual = fs.readFileSync("/tmp/cc-cedict-textual.xml").toString()
+
+// cccedicttextual = '<article>\n' +
+// '<key>88</key>\n' +
+// '<synonym>ba1 ba1</synonym>\n' +
+// '<synonym>bye-bye</synonym>\n' +
+// '<definition type="h"><![CDATA[<div style="border: 1px solid"><div><big><div style="display: inline-block"><font color="cornflowerblue">8</font><font color="cornflowerblue">8</font></div></big><br><big><div style="display: inline-block"><font color="cornflowerblue">bā</font><font color="cornflowerblue">bā</font></div></big></div><div><ul><li>(Internet slang) bye-bye (alternative for 拜拜[bai2 bai2])</li></ul></div></div>]]></definition>\n' +
+// '</article>'
+
+cccedicttextual = cccedicttextual.replace(/; padding: 5px/g,      '')
+cccedicttextual = cccedicttextual.replace(/font color="red"/g,    `font color="${getTone(1)}"`)
+cccedicttextual = cccedicttextual.replace(/font color="orange"/g, `font color="${getTone(2)}"`)
+cccedicttextual = cccedicttextual.replace(/font color="green"/g,  `font color="${getTone(3)}"`)
+cccedicttextual = cccedicttextual.replace(/font color="blue"/g,   `font color="${getTone(4)}"`)
+cccedicttextual = cccedicttextual.replace(/font color="black"/g,  `font color="${getTone(5)}"`)
+cccedicttextual = cccedicttextual.replaceAll(/(CDATA\[.*<\/big>)([^\n]+)/g,  (match, p1, p2) => {
+  // console.log({ p1, p2 })
+  return p1 + colorPinyin(colorizeHanzi__in_text(p2)).replace(/\[/g, ' [')
+})
+
+fs.writeFileSync("/tmp/cc-cedict-textual.xml", cccedicttextual)
+mkStardict("/tmp/cc-cedict-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/cc-cedict/")
 
 ///////////////////////////////////////////////////////
 
