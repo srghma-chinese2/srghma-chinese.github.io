@@ -241,10 +241,11 @@ const db = (function () {
       return rendered.includes("href=\"https://images.yw11.com/zixing/")
     }
 
-    const unfinished = R.toPairs(ruPinyinObjectCache).filter(([k, v]) => / --\n/g.test(v)).map(([k, v]) => k)
-    console.log(unfinished)
+    // const unfinished = R.toPairs(ruPinyinObjectCache).filter(([k, v]) => / --\n/g.test(v)).map(([k, v]) => k)
+    // console.log(unfinished)
+    // let allHanzi = unfinished
 
-    let allHanzi = unfinished
+    let allHanzi = Array.from(arrayOfKnownHanzi__small)
 
     // let allHanzi = R.uniq([...R.difference(R.uniq([
     //   ...hsk,

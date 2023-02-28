@@ -52,24 +52,24 @@ const getTone = R.cond([
   // [R.equals(3), R.always('#cb59ff')],
   // [R.equals(4), R.always('#ff6f7c')],
   // [R.equals(5), R.always('#a7a7a7')],
-  [R.equals(1), R.always('cornflowerblue')],
+  [R.equals(1), R.always('lightskyblue')],
   [R.equals(2), R.always('springgreen')],
   [R.equals(3), R.always('violet')],
-  [R.equals(4), R.always('tomato')],
+  [R.equals(4), R.always('red')],
   [R.equals(5), R.always('gainsboro')],
   [R.T,         temp => { throw new Error(`Unknown tone: ${temp.toString()}`) }]
 ])
 
-const colorizeHanzi = x => {
+const colorizeHanzi = (x, dsl) => {
   const dict_hanzis = hanzijs.definitionLookup(x)
   if (!dict_hanzis) { return x }
   const dict_hanzi = dict_hanzis[0]
   const tone = parseInt(R.last(dict_hanzi.pinyin), 10)
   const toneColor = getTone(tone)
-  return `<font color="${toneColor}">${x}</font>`
+  return dsl ? `[c ${toneColor}]${x}[/c]` : `<font color="${toneColor}">${x}</font>`
 }
 
-const colorizeHanzi__in_text = x => [...x].map(colorizeHanzi).join('')
+const colorizeHanzi__in_text = (x, dsl) => [...x].map(x => colorizeHanzi(x, dsl)).join('')
 
 const escapeHTML = str => str.replace(/[&<>'"]/g,
   tag => ({
@@ -98,10 +98,11 @@ pinyin = pinyin.map(([n, r]) => [Number(n), r])
 pinyin = pinyin.map(([n, r]) => [getTone(n), r])
 // pinyin = pinyin.map(({ n, v }) => ({ n, v, toneColor: getTone(n) }))
 // console.log(util.inspect(pinyin, { maxArrayLength: Infinity, showHidden: false, depth: null, colors: true }))
+// console.log(pinyin[0][1])
 
-function colorPinyin(text) {
+function colorPinyin(text, dsl) {
   pinyin.forEach(([toneColor, r]) => {
-    text = text.replace(new RegExp(r, 'g'), `<font color="${toneColor}">$1</font>`)
+    text = text.replace(new RegExp(r, 'g'), dsl ? `[c ${toneColor}]$1[/c]` : `<font color="${toneColor}">$1</font>`)
   })
   return text
 }
@@ -110,6 +111,7 @@ colorPinyin("er4 shi2 yi1 san1 ti3 zong1 he2 zheng4")
 colorPinyin("er4r shi2r yi1r san1r ti3r zong1r he2r zheng4r")
 colorPinyin("er4shi2yi1san1ti3zong1he2zheng4")
 colorPinyin("er4rshi2ryi1rsan1rti3rzong1rhe2rzheng4r")
+colorPinyin("[m1]asdfasdf[/m]")
 
 // function colorPinyin(pinyin) {
 //   // return pinyin.split(' ').map(pinyinEl => {
@@ -158,11 +160,19 @@ function throwIfDuplicate(ruPinyinArray) {
 }
 
 
-const mkStardict = (input, output) => require("child_process").execSync(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rfd "$OUTPUT" && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'`)
+const execAndEcho = (command) => {
+  console.log(command)
+  require("child_process").execSync(command)
+  console.log("DONE", command)
+}
 
-const mkAard = (input, output) => require("child_process").execSync(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rf "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Aard2Slob'`)
+const mkStardict = (input, output) => execAndEcho(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rfd "$OUTPUT" && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Stardict'`)
 
-const mkCCCEDICTToTextual = (input, output) => require("child_process").execSync(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rf "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=CC-CEDICT --write-format=StardictTextual'`)
+const mkDslToStardict = (input, output) => execAndEcho(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rfd "$OUTPUT" && mkdir -p "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=ABBYYLingvoDSL --write-format=Stardict'`)
+
+const mkAard = (input, output) => execAndEcho(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rf "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=StardictTextual --write-format=Aard2Slob'`)
+
+const mkCCCEDICTToTextual = (input, output) => execAndEcho(`export INPUT="${input}" && export OUTPUT="${output}" && rm -rf "$OUTPUT" && cd ~/projects/pyglossary && nix-shell -p pkgs.gobject-introspection python38Packages.pygobject3 python38Packages.pycairo python38Packages.prompt_toolkit python38Packages.lxml python38Packages.PyICU pkgs.dict --run 'python3 main.py --ui=cmd "$INPUT" "$OUTPUT" --utf8-check --read-format=CC-CEDICT --write-format=StardictTextual'`)
 
 exports.convertPinyin__marked_to_numbered = convertPinyin__marked_to_numbered
 exports.writeWithAwait                    = writeWithAwait
@@ -176,6 +186,7 @@ exports.removeLinks                       = removeLinks
 exports.ruPinyinTextToArray               = ruPinyinTextToArray
 exports.getDuplicatedItems                = getDuplicatedItems
 exports.throwIfDuplicate                  = throwIfDuplicate
+exports.mkDslToStardict                   = mkDslToStardict
 exports.mkStardict                        = mkStardict
 exports.mkAard                            = mkAard
 exports.mkCCCEDICTToTextual               = mkCCCEDICTToTextual

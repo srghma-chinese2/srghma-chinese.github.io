@@ -84,7 +84,7 @@ function sortBy(fn, list) {
 function mk_ruPinyinObject_small(ruPinyinObject) {
   const buffer = new Set()
   for (const [key, value] of Object.entries(ruPinyinObject)) {
-    if (value.length < 10 || value.includes("TODOFINISH")) {
+    if (value.length < 30 || value.includes("TODOFINISH")) {
       buffer.add(key)
     }
   }

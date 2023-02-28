@@ -24,6 +24,7 @@ const {
   getDuplicatedItems,
   throwIfDuplicate,
   mkStardict,
+  mkDslToStardict,
   mkAard,
   mkCCCEDICTToTextual,
 } = require('./make-pleco-user-dictionary--utils.js')
@@ -107,6 +108,24 @@ mkStardict("/tmp/srghma-chinese-stardict-textual.xml", "/home/srghma/Desktop/dic
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// http://lingvo.helpmax.net/en/troubleshooting/dsl-compiler/text-formatting/
+const makeBKRS = (file) => {
+  let cccedicttextual = fs.readFileSync(`/home/srghma/Downloads/${file}`).toString()
+  cccedicttextual = colorPinyin(cccedicttextual, true)
+  cccedicttextual = cccedicttextual.replaceAll(/\[ex\](.+?)\[\/ex\]/g,  (match, p1) => {
+    // console.log({ p1, p2 })
+    return `[ex]${colorizeHanzi__in_text(p1, true)}[/ex]`
+  })
+  // fs.writeFileSync(`/tmp/${file}.dsl`, cccedicttextual)
+  // mkDslToStardict(`/tmp/${file}.dsl`, `/home/srghma/Desktop/dictionaries/mychinese/${file}/`)
+  fs.writeFileSync(`/home/srghma/Desktop/dictionaries/mychinese/${file}.dsl`, cccedicttextual)
+}
+
+// makeBKRS('dabkrs_230216')
+// makeBKRS('dabruks_230216')
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const ankiJson = JSON.parse(fs.readFileSync('./files/anki.json').toString()); null
 // const ankiJson = {}
 
@@ -135,11 +154,11 @@ const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_h
   const linkTranchinese = x => `<a href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}">${x}</a>`
 
   let value = [
-    purpleculture_info                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_info)}` : '',
+    purpleculture_info                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_info, false)}` : '',
     purpleculture_hsk                 ? `purpleculture_hsk: ${purpleculture_hsk}` : '',
-    purpleculture_tree                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_tree)}` : '',
-    charactersWithComponent           ? `charactersWithComponent: ${charactersWithComponent.map(colorizeHanzi).join(", ")}` : '',
-    charactersWithComponent_hanziyuan ? `charactersWithComponent_hanziyuan: ${charactersWithComponent_hanziyuan.map(colorizeHanzi).join(", ")}` : '',
+    purpleculture_tree                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_tree, false)}` : '',
+    charactersWithComponent           ? `charactersWithComponent: ${charactersWithComponent.map(x => colorizeHanzi(x, false)).join(", ")}` : '',
+    charactersWithComponent_hanziyuan ? `charactersWithComponent_hanziyuan: ${charactersWithComponent_hanziyuan.map(x => colorizeHanzi(x, false)).join(", ")}` : '',
     `tranchinese: ${linkTranchinese(`${key}*`)}, ${linkTranchinese(`*${key}`)}`
   ].filter(x => x).map(x => `<p>${x}</p>`).join('')
   // console.log(value)
@@ -177,7 +196,7 @@ let trainchinese_cache_ = null
 trainchinese_cache_ = Object.values(trainchinese_cache).flat().filter(R.identity)
 trainchinese_cache_ = trainchinese_cache_.filter(x => x.type !== 'фраза')
 trainchinese_cache_ = trainchinese_cache_.filter(x => x.type !== 'идиома')
-trainchinese_cache_ = R.uniqBy(x => [x.ch.trim(), x.pinyin.trim(), x.transl.trim(), x.type.trim()].join(''), trainchinese_cache_)
+trainchinese_cache_ = R.uniqBy(x => [x.ch.trim(), x.pinyin.trim(), x.transl.trim(), x.type.trim()].flat().join(''), trainchinese_cache_)
 trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_numbered: convertPinyin__marked_to_numbered(x.pinyin) }))
 trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_colored_html: colorPinyin(x.pinyin) }))
 
@@ -251,7 +270,8 @@ trainchinese_textual__writer.on('open', async function() {
     value = value.map(([k, v]) => {
       const print = withCh => ({ ch, pinyin_colored_html, transl, type }) => {
         return [
-          withCh ? colorizeHanzi__in_text(ch) : null,
+          // withCh ? ch : null,
+          withCh ? `<span>${colorizeHanzi__in_text(ch)}</span>` : null,
           `<font color="green">${escapeHTML(type)}</font>`,
           pinyin_colored_html,
           escapeHTML(transl),
@@ -343,7 +363,8 @@ trainchinese_ru_textual__writer.on('open', async function() {
 
     chWords = chWords.map(({ ch, pinyin_colored_html, transl, type }) => {
       return [
-        colorizeHanzi__in_text(ch),
+        // ch,
+        `<span>${colorizeHanzi__in_text(ch)}</span>`,
         `<font color="green">${escapeHTML(type)}</font>`,
         pinyin_colored_html,
         escapeHTML(transl),
