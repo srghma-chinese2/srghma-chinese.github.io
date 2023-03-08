@@ -145,8 +145,8 @@ const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_h
     // console.log('3', text)
     return text
   }
-  if (purpleculture_tree) { purpleculture_tree = process(purpleculture_tree) }
   if (purpleculture_info) { purpleculture_info = process(purpleculture_info) }
+  if (purpleculture_tree) { purpleculture_tree = process(purpleculture_tree) }
 
   // WHF!!! bc of &??
   // const linkTranchinese = x => `<iref href="https://www.trainchinese.com/v2/search.php?searchWord=${encodeURIComponent(x)}&tcLanguage=ru">${x}</iref>`
@@ -156,7 +156,7 @@ const dict_output_text_purple = R.toPairs(ankiJson).map(([key, { purpleculture_h
   let value = [
     purpleculture_info                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_info, false)}` : '',
     purpleculture_hsk                 ? `purpleculture_hsk: ${purpleculture_hsk}` : '',
-    purpleculture_tree                ? `purpleculture_info: ${colorizeHanzi__in_text(purpleculture_tree, false)}` : '',
+    purpleculture_tree                ? `purpleculture_tree: ${colorizeHanzi__in_text(purpleculture_tree, false)}` : '',
     charactersWithComponent           ? `charactersWithComponent: ${charactersWithComponent.map(x => colorizeHanzi(x, false)).join(", ")}` : '',
     charactersWithComponent_hanziyuan ? `charactersWithComponent_hanziyuan: ${charactersWithComponent_hanziyuan.map(x => colorizeHanzi(x, false)).join(", ")}` : '',
     `tranchinese: ${linkTranchinese(`${key}*`)}, ${linkTranchinese(`*${key}`)}`
@@ -225,6 +225,7 @@ trainchinese_textual__writer.on('open', async function() {
   for await (const key of alltrainchinese__hierogliphs) {
     // console.log(key)
     let trainchinese_cache_current = trainchinese_cache_.filter(({ ch }) => ch.includes(key))
+
     const get = r => {
       const [matches, doesntmatch] = R.partition(s => (new RegExp(r)).test(s.ch), trainchinese_cache_current)
       trainchinese_cache_current = doesntmatch
@@ -325,8 +326,10 @@ function rutranslation_splitOnWords(text) {
   text = text.replace(/\([^\)]+\)([,;])/g, '$1')
   text = text.replace(/ и /g, ',')
   text = text.replace(/\(обр\.\)/g, ',')
+  text = text.replace(/ё/g, 'е')
+  // text = text.replace(/e/g, 'е') // eng to ru
   text = text.replace(/так([^,]*), как/g, 'так$1 как')
-  text = text.split(/[,;\.:\s\"]/g)
+  text = text.split(/[,;\.:\s\"\(\)]/g)
   text = text.map(x => x.trim()).filter(x => x).filter(x => !x.startsWith('см.'))
   return text
 }

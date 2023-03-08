@@ -60,7 +60,7 @@ const getTone = R.cond([
   [R.T,         temp => { throw new Error(`Unknown tone: ${temp.toString()}`) }]
 ])
 
-const colorizeHanzi = (x, dsl) => {
+function colorizeHanzi(x, dsl) {
   const dict_hanzis = hanzijs.definitionLookup(x)
   if (!dict_hanzis) { return x }
   const dict_hanzi = dict_hanzis[0]
