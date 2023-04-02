@@ -188,17 +188,62 @@ throwIfDuplicate(ruPinyinArray_)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+function pinyin_numbered_only_letters_and_numbers___make_last_tone_5(pinyin_numbered_only_letters_and_numbers) {
+  // return pinyin_numbered_only_letters_and_numbers.replace(/(\d+)(?=\D*$)/, '')
+  return pinyin_numbered_only_letters_and_numbers.replace(/\d$/, '')
+}
+
+// pinyin_numbered_only_letters_and_numbers___make_last_tone_5('piao4 liang') // should be 'piao4 liang'
+// pinyin_numbered_only_letters_and_numbers___make_last_tone_5('piao4 liang2') // should be 'piao4 liang'
+
 const trainchinese_with_cache_path = '/home/srghma/projects/anki-cards-from-pdf/trainchinese_cache.json'
 let trainchinese_cache = {}
 if (fs.existsSync(trainchinese_with_cache_path)) { trainchinese_cache = JSON.parse(fs.readFileSync(trainchinese_with_cache_path).toString()) }; null
 
 let trainchinese_cache_ = null
 trainchinese_cache_ = Object.values(trainchinese_cache).flat().filter(R.identity)
-trainchinese_cache_ = R.uniqBy(x => [x.ch.trim(), x.pinyin.trim(), x.transl.trim(), x.type.trim()].flat().join(''), trainchinese_cache_)
+trainchinese_cache_ = R.uniqBy(x => [x.ch.trim(), x.pinyin.trim(), x.transl.trim(), x.type.trim()].flat().join('').replace(/[\s\.]+/ig, ''), trainchinese_cache_)
 trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_numbered: convertPinyin__marked_to_numbered(x.pinyin), pinyin_colored_html: colorPinyin(x.pinyin) }))
+trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_numbered_only_letters_and_numbers: x.pinyin_numbered.toLowerCase().replace(/[^a-z0-9]+/g, '') }))
+trainchinese_cache_ = trainchinese_cache_.map(x => ({ ...x, pinyin_numbered_only_letters_and_numbers__last_tone_is_5: pinyin_numbered_only_letters_and_numbers___make_last_tone_5(x.pinyin_numbered_only_letters_and_numbers) }))
 
 const [trainchinese_cache__only_frases, trainchinese_cache__without_frases] = R.partition(x => x.type === 'фраза', trainchinese_cache_)
 const [trainchinese_cache__only_idioms, trainchinese_cache__without_frases_and_idioms] = R.partition(x => x.type === 'идиома', trainchinese_cache__without_frases)
+
+// "cheng2 le hong2 se4 ."
+
+const getOmophones = (values) => {
+  let output = values.map(({ ch, pinyin_numbered, pinyin_numbered_only_letters_and_numbers, pinyin_numbered_only_letters_and_numbers__last_tone_is_5 }) => {
+    if (!ch)                                                       { throw new Error('ch') }
+    if (!pinyin_numbered)                                          { throw new Error('pinyin_numbered') }
+    if (!pinyin_numbered_only_letters_and_numbers)                 { throw new Error('pinyin_numbered_only_letters_and_numbers') }
+    if (!pinyin_numbered_only_letters_and_numbers__last_tone_is_5) { throw new Error('pinyin_numbered_only_letters_and_numbers__last_tone_is_5') }
+
+    const trainchinese_cache___without_current_word = trainchinese_cache_.filter(x => x.ch !== ch)
+
+    const omophones = trainchinese_cache___without_current_word.filter(x => x.pinyin_numbered_only_letters_and_numbers == pinyin_numbered_only_letters_and_numbers)
+
+    const omophones__last_tone_is_5 = pinyin_numbered_only_letters_and_numbers__last_tone_is_5 === pinyin_numbered_only_letters_and_numbers
+      ? []
+      : trainchinese_cache___without_current_word.filter(x => x.pinyin_numbered_only_letters_and_numbers === pinyin_numbered_only_letters_and_numbers__last_tone_is_5)
+
+    return [
+      { id: pinyin_numbered_only_letters_and_numbers, omophones: omophones },
+      { id: pinyin_numbered_only_letters_and_numbers, omophones: omophones__last_tone_is_5 }
+    ]
+  })
+  output = output.flat().filter(x => x.omophones.length > 0)
+
+  if (output.length === 1) {
+    return { 'omophones': output[0].omophones }
+  }
+
+  if (output.length === 2) {
+    return { 'omophones': output[0].omophones, 'omophones5': output[1].omophones }
+  }
+
+  return R.fromPairs(output.map(({ id, omophones }) => [`omophones ${id}`, omophones]))
+}
 
 const printTrainChineseRow = withCh => ({ ch, pinyin_colored_html, transl, type }) => {
   return [
@@ -235,7 +280,7 @@ trainchinese_ch_word_to_ru__textual__writer.on('open', async function() {
   for await (const [key, value] of R.toPairs(trainchinese_cache__without_frases_and_idioms__words)) {
     let trainchinese_cache_current = trainchinese_cache__without_frases_and_idioms.filter(({ ch }) => ch !== key && ch.includes(key))
 
-    const get = r => {
+    const getByRegex = r => {
       const [matches, doesntmatch] = R.partition(s => (new RegExp(r)).test(s.ch), trainchinese_cache_current)
       trainchinese_cache_current = doesntmatch
       // return matches
@@ -245,34 +290,36 @@ trainchinese_ch_word_to_ru__textual__writer.on('open', async function() {
     let rendering = {
       ' ': value,
 
-      'x.': get(`^${key}.$`),
-      '.x': get(`^.${key}$`),
+      ...getOmophones(value),
 
-      'x..': get(`^${key}..$`),
-      '.x.': get(`^.${key}.$`),
-      '..x': get(`^..${key}$`),
+      'x.': getByRegex(`^${key}.$`),
+      '.x': getByRegex(`^.${key}$`),
 
-      'x...': get(`^${key}...$`),
-      '.x..': get(`^.${key}..$`),
-      '..x.': get(`^..${key}.$`),
-      '...x': get(`^...${key}$`),
+      'x..': getByRegex(`^${key}..$`),
+      '.x.': getByRegex(`^.${key}.$`),
+      '..x': getByRegex(`^..${key}$`),
 
-      'x....': get(`^${key}....$`),
-      '.x...': get(`^.${key}...$`),
-      '..x..': get(`^..${key}..$`),
-      '...x.': get(`^...${key}.$`),
-      '....x': get(`^....${key}$`),
+      'x...': getByRegex(`^${key}...$`),
+      '.x..': getByRegex(`^.${key}..$`),
+      '..x.': getByRegex(`^..${key}.$`),
+      '...x': getByRegex(`^...${key}$`),
 
-      'x.....': get(`^${key}.....$`),
-      '.x....': get(`^.${key}....$`),
-      '..x...': get(`^..${key}...$`),
-      '...x..': get(`^...${key}..$`),
-      '....x.': get(`^....${key}.$`),
-      '.....x': get(`^.....${key}$`),
+      'x....': getByRegex(`^${key}....$`),
+      '.x...': getByRegex(`^.${key}...$`),
+      '..x..': getByRegex(`^..${key}..$`),
+      '...x.': getByRegex(`^...${key}.$`),
+      '....x': getByRegex(`^....${key}$`),
 
-      'x*':    get(`^${key}`),
-      // '*x':    get(`${key}$`),
-      'other': get(`.`),
+      'x.....': getByRegex(`^${key}.....$`),
+      '.x....': getByRegex(`^.${key}....$`),
+      '..x...': getByRegex(`^..${key}...$`),
+      '...x..': getByRegex(`^...${key}..$`),
+      '....x.': getByRegex(`^....${key}.$`),
+      '.....x': getByRegex(`^.....${key}$`),
+
+      'x*':    getByRegex(`^${key}`),
+      // '*x':    getByRegex(`${key}$`),
+      'other': getByRegex(`.`),
 
       'idioms': trainchinese_cache__only_idioms.filter(({ ch }) => ch.includes(key)),
       'frases': trainchinese_cache__only_frases.filter(({ ch }) => ch.includes(key)),
@@ -331,7 +378,7 @@ trainchinese_ch_ierogliph_to_ru_textual__writer.on('open', async function() {
     // console.log(key)
     let trainchinese_cache_current = trainchinese_cache__without_frases_and_idioms.filter(({ ch }) => ch.includes(key))
 
-    const get = r => {
+    const getByRegex = r => {
       const [matches, doesntmatch] = R.partition(s => (new RegExp(r)).test(s.ch), trainchinese_cache_current)
       trainchinese_cache_current = doesntmatch
       // return matches
@@ -339,36 +386,36 @@ trainchinese_ch_ierogliph_to_ru_textual__writer.on('open', async function() {
     }
 
     let value = {
-      ' ': get(`^${key}$`),
+      ' ': getByRegex(`^${key}$`),
 
-      'x.': get(`^${key}.$`),
-      '.x': get(`^.${key}$`),
+      'x.': getByRegex(`^${key}.$`),
+      '.x': getByRegex(`^.${key}$`),
 
-      'x..': get(`^${key}..$`),
-      '.x.': get(`^.${key}.$`),
-      '..x': get(`^..${key}$`),
+      'x..': getByRegex(`^${key}..$`),
+      '.x.': getByRegex(`^.${key}.$`),
+      '..x': getByRegex(`^..${key}$`),
 
-      'x...': get(`^${key}...$`),
-      '.x..': get(`^.${key}..$`),
-      '..x.': get(`^..${key}.$`),
-      '...x': get(`^...${key}$`),
+      'x...': getByRegex(`^${key}...$`),
+      '.x..': getByRegex(`^.${key}..$`),
+      '..x.': getByRegex(`^..${key}.$`),
+      '...x': getByRegex(`^...${key}$`),
 
-      'x....': get(`^${key}....$`),
-      '.x...': get(`^.${key}...$`),
-      '..x..': get(`^..${key}..$`),
-      '...x.': get(`^...${key}.$`),
-      '....x': get(`^....${key}$`),
+      'x....': getByRegex(`^${key}....$`),
+      '.x...': getByRegex(`^.${key}...$`),
+      '..x..': getByRegex(`^..${key}..$`),
+      '...x.': getByRegex(`^...${key}.$`),
+      '....x': getByRegex(`^....${key}$`),
 
-      'x.....': get(`^${key}.....$`),
-      '.x....': get(`^.${key}....$`),
-      '..x...': get(`^..${key}...$`),
-      '...x..': get(`^...${key}..$`),
-      '....x.': get(`^....${key}.$`),
-      '.....x': get(`^.....${key}$`),
+      'x.....': getByRegex(`^${key}.....$`),
+      '.x....': getByRegex(`^.${key}....$`),
+      '..x...': getByRegex(`^..${key}...$`),
+      '...x..': getByRegex(`^...${key}..$`),
+      '....x.': getByRegex(`^....${key}.$`),
+      '.....x': getByRegex(`^.....${key}$`),
 
-      'x*':    get(`^${key}`),
-      // '*x':    get(`${key}$`),
-      'other': get(`.`),
+      'x*':    getByRegex(`^${key}`),
+      // '*x':    getByRegex(`${key}$`),
+      'other': getByRegex(`.`),
     }
 
     value = R.toPairs(value).filter(([k, v]) => v.length > 0)
