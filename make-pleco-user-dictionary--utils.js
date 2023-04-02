@@ -4,8 +4,8 @@ const { once } = require('events')
 const pinyinUtils = require('pinyin-utils')
 const pinyinSplit = require('pinyin-split')
 
-const hanzijs = require("hanzi");
-hanzijs.start();
+const hanzijs = require("hanzi")
+hanzijs.start()
 
 // https://github.com/pepebecker/pinyin-convert/blob/master/index.js
 const convertPinyin__marked_to_numbered = text => {
