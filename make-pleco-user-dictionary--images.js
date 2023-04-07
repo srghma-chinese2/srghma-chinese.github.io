@@ -73,29 +73,20 @@ const {
 //   await downloadUrls(r12345_chars);
 // })();
 
+// .slice(0, 10)
 const srghma_chinese_r12345_textual__text = r12345_chars.map((hanzi) => {
   const id = encodeURIComponent(hanzi).replace(/%/g,'')
   const fileName = `${id}.png`;
-  const img = `<img src="${fileName}">`
-  // <definition-r><resource type="img" key="${fileName}"/></definition-r>
-  return `<article><key>${hanzi}</key><definition type="h"><![CDATA[${img}]]></definition></article>`
+  return `${hanzi}\n     [s]res/${fileName}[/s]`
 }).join('\n\n')
 
-fs.writeFileSync(`/tmp/srghma-chinese-r12345-textual.xml`, `<?xml version="1.0" encoding="UTF-8" ?>
-<stardict>
-<info>
-  <version>3.0.0</version>
-  <bookname>srghma chinese r12345</bookname>
-  <author>Serhii Khoma</author>
-  <email>srghma@gmail.com</email>
-  <website>srghma-chinese2.github.io</website>
-  <description>MIT copyright</description>
-  <date>${new Date()}</date>
-  <dicttype><!-- this element is normally empty --></dicttype>
-</info>
-<contents>
-${srghma_chinese_r12345_textual__text}
-</contents>
-</stardict>`)
+const text = `#NAME "srghma chinese r12345"
+#INDEX_LANGUAGE "Chinese"
+#CONTENTS_LANGUAGE "English"
 
-mkStardict("/tmp/srghma-chinese-r12345-textual.xml", "/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-r12345/")
+${srghma_chinese_r12345_textual__text}`
+
+const utf16buffer = Buffer.from(`\ufeff${text}`, 'utf16le');
+
+fs.writeFileSync(`/home/srghma/Desktop/dictionaries/mychinese/srghma-chinese-r12345.dsl`, utf16buffer)
+
