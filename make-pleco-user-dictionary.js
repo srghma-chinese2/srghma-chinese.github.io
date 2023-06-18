@@ -245,11 +245,47 @@ const getOmophones = (values) => {
   return R.fromPairs(output.map(({ id, omophones }) => [`omophones ${id}`, omophones]))
 }
 
+// R.uniq(trainchinese_cache_.map(x => x.type).map(x => x.split('/')).flat())
+
+const colorizeType = (type) => {
+  let type_ = type.split('/')
+  type_ = type_.map(x => {
+    const color = {
+      'прил':                  'cyan',
+      'сущ':                   'orange',
+      'глаг':                  'red',
+      'фраза':                 'green',
+      'фраза со знач. сущ':    'green',
+      'идиома':                'green',
+      'графема':               'green',
+      'ключ':                  'green',
+      'нареч':                 'green',
+      'сч.слово':              'green',
+      'местоим':               'green',
+      'Раздельно-слитные сл.': 'green',
+      'частица':               'green',
+      'вспом.сл.':             'orange',
+      'предлог':               'green',
+      'союз':                  'green',
+      'мод.глаг':              'red',
+      'междом':                'green',
+      'звукоподр':             'green',
+      'число':                 'green',
+      'pron.':                 'green'
+    }[x]
+
+    if (!color) { throw new Error(`no color for ${x}`) }
+
+    return `<font color="${color}">${escapeHTML(x)}</font>`
+  })
+  return type_.join(escapeHTML('/'))
+}
+
 const printTrainChineseRow = withCh => ({ ch, pinyin_colored_html, transl, type }) => {
   return [
     // withCh ? ch : null,
     withCh ? `<span>${colorizeHanzi__in_text(ch)}</span>` : null,
-    `<font color="green">${escapeHTML(type)}</font>`,
+    colorizeType(type),
     pinyin_colored_html,
     escapeHTML(transl),
   ].filter(x => x).join(escapeHTML(' | '))
@@ -287,38 +323,40 @@ trainchinese_ch_word_to_ru__textual__writer.on('open', async function() {
       return R.sortBy(x => x.pinyin_numbered, matches)
     }
 
+    const exes = key.split('').map(() => 'x').join('')
+
     let rendering = {
       ' ': value,
 
       ...getOmophones(value),
 
-      'x.': getByRegex(`^${key}.$`),
-      '.x': getByRegex(`^.${key}$`),
+      [`${exes}.`]: getByRegex(`^${key}.$`),
+      [`.${exes}`]: getByRegex(`^.${key}$`),
 
-      'x..': getByRegex(`^${key}..$`),
-      '.x.': getByRegex(`^.${key}.$`),
-      '..x': getByRegex(`^..${key}$`),
+      [`${exes}..`]: getByRegex(`^${key}..$`),
+      [`.${exes}.`]: getByRegex(`^.${key}.$`),
+      [`..${exes}`]: getByRegex(`^..${key}$`),
 
-      'x...': getByRegex(`^${key}...$`),
-      '.x..': getByRegex(`^.${key}..$`),
-      '..x.': getByRegex(`^..${key}.$`),
-      '...x': getByRegex(`^...${key}$`),
+      [`${exes}...`]: getByRegex(`^${key}...$`),
+      [`.${exes}..`]: getByRegex(`^.${key}..$`),
+      [`..${exes}.`]: getByRegex(`^..${key}.$`),
+      [`...${exes}`]: getByRegex(`^...${key}$`),
 
-      'x....': getByRegex(`^${key}....$`),
-      '.x...': getByRegex(`^.${key}...$`),
-      '..x..': getByRegex(`^..${key}..$`),
-      '...x.': getByRegex(`^...${key}.$`),
-      '....x': getByRegex(`^....${key}$`),
+      [`${exes}....`]: getByRegex(`^${key}....$`),
+      [`.${exes}...`]: getByRegex(`^.${key}...$`),
+      [`..${exes}..`]: getByRegex(`^..${key}..$`),
+      [`...${exes}.`]: getByRegex(`^...${key}.$`),
+      [`....${exes}`]: getByRegex(`^....${key}$`),
 
-      'x.....': getByRegex(`^${key}.....$`),
-      '.x....': getByRegex(`^.${key}....$`),
-      '..x...': getByRegex(`^..${key}...$`),
-      '...x..': getByRegex(`^...${key}..$`),
-      '....x.': getByRegex(`^....${key}.$`),
-      '.....x': getByRegex(`^.....${key}$`),
+      [`${exes}.....`]: getByRegex(`^${key}.....$`),
+      [`.${exes}....`]: getByRegex(`^.${key}....$`),
+      [`..${exes}...`]: getByRegex(`^..${key}...$`),
+      [`...${exes}..`]: getByRegex(`^...${key}..$`),
+      [`....${exes}.`]: getByRegex(`^....${key}.$`),
+      [`.....${exes}`]: getByRegex(`^.....${key}$`),
 
-      'x*':    getByRegex(`^${key}`),
-      // '*x':    getByRegex(`${key}$`),
+      [`${exes}*`]:    getByRegex(`^${key}`),
+      // `*${exes}`:    getByRegex(`${key}$`),
       'other': getByRegex(`.`),
 
       'idioms': trainchinese_cache__only_idioms.filter(({ ch }) => ch.includes(key)),
@@ -329,7 +367,7 @@ trainchinese_ch_word_to_ru__textual__writer.on('open', async function() {
 
     rendering = rendering.map(([k, v]) => {
       return [
-        k.trim() ? `<big>${k}</big>` : null,
+        k.trim() ? `<hr/><big>${k}</big>` : null,
         ...(R.uniq(v.map(printTrainChineseRow(!!k.trim()))))
       ]
     }).flat().filter(x => x).join('<br/>')
@@ -422,7 +460,7 @@ trainchinese_ch_ierogliph_to_ru_textual__writer.on('open', async function() {
 
     value = value.map(([k, v]) => {
       return [
-        k.trim() ? `<big>${k}</big>` : null,
+        k.trim() ? `<hr/><big>${k}</big>` : null,
         ...(R.uniq(v.map(printTrainChineseRow(!!k.trim()))))
       ]
     }).flat().filter(x => x).join('<br/>')
@@ -515,7 +553,7 @@ trainchinese_ru_textual__writer.on('open', async function() {
       return [
         // ch,
         `<span>${colorizeHanzi__in_text(ch)}</span>`,
-        `<font color="green">${escapeHTML(type)}</font>`,
+        colorizeType(type),
         pinyin_colored_html,
         escapeHTML(transl),
       ].filter(x => x).join(escapeHTML(' | '))
